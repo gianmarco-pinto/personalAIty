@@ -1,0 +1,77 @@
+#!/usr/bin/env node
+// PersonalAIty CLI — compile persona specs into per-medium artifacts.
+import { writeFileSync } from 'node:fs';
+import { loadPersona } from '../src/load.js';
+import { compileChat } from '../src/compile/chat.js';
+import { compileSocial } from '../src/compile/social.js';
+
+const HELP = `personalaity v0.2
+
+Usage:
+  personalaity compile <persona.yaml> [--target chat|social] [--lang en|it] [--out file]
+  personalaity validate <persona.yaml>
+
+Targets:
+  chat    (default) system prompt for LLM chat/agents — L2 conformance
+  social  content style guide for social media voice — L2 conformance (en only)
+
+Notes:
+  Structured fields are rendered in the requested --lang; freeform text
+  (summary, backstory, quirks, boundaries) passes through as authored.
+`;
+
+function parseArgs(argv) {
+  const args = { _: [] };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a.startsWith('--')) args[a.slice(2)] = argv[++i] ?? true;
+    else args._.push(a);
+  }
+  return args;
+}
+
+const args = parseArgs(process.argv.slice(2));
+const [cmd, file] = args._;
+
+if (!cmd || args.help || !file) {
+  console.log(HELP);
+  process.exit(cmd ? 1 : 0);
+}
+
+const { persona, errors } = loadPersona(file);
+
+if (cmd === 'validate') {
+  if (errors.length) {
+    console.error(`✗ ${file}`);
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  console.log(`✔ ${file} is a valid PersonalAIty persona (spec ${persona.persona_spec})`);
+  process.exit(0);
+}
+
+if (cmd === 'compile') {
+  if (errors.length) {
+    console.error(`✗ ${file} failed validation:`);
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  const target = args.target ?? 'chat';
+  const compilers = { chat: compileChat, social: compileSocial };
+  if (!compilers[target]) {
+    console.error(`✗ target '${target}' not implemented yet (available: ${Object.keys(compilers).join(', ')})`);
+    process.exit(1);
+  }
+  const out = compilers[target](persona, { lang: args.lang ?? 'en' });
+  if (args.out) {
+    writeFileSync(args.out, out);
+    console.error(`✔ wrote ${args.out}`);
+  } else {
+    process.stdout.write(out);
+  }
+  process.exit(0);
+}
+
+console.error(`✗ unknown command '${cmd}'`);
+console.log(HELP);
+process.exit(1);

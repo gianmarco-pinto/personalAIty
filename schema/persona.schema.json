@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://personalaity.dev/schema/0.1/persona.schema.json",
+  "title": "PersonalAIty Persona Spec v0.1",
+  "type": "object",
+  "required": ["persona_spec", "id", "name", "traits"],
+  "properties": {
+    "persona_spec": { "const": "0.1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "default": "1.0.0" },
+    "description": { "type": "string" },
+    "authors": { "type": "array", "items": { "type": "string" } },
+    "license": { "type": "string" },
+    "identity": {
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string" },
+        "backstory": { "type": "string" },
+        "demographics": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "traits": {
+      "type": "object",
+      "required": ["honesty_humility", "emotionality", "extraversion", "agreeableness", "conscientiousness", "openness"],
+      "properties": {
+        "honesty_humility": { "$ref": "#/$defs/domain_hh" },
+        "emotionality": { "$ref": "#/$defs/domain_em" },
+        "extraversion": { "$ref": "#/$defs/domain_ex" },
+        "agreeableness": { "$ref": "#/$defs/domain_ag" },
+        "conscientiousness": { "$ref": "#/$defs/domain_co" },
+        "openness": { "$ref": "#/$defs/domain_op" },
+        "altruism": { "$ref": "#/$defs/score" }
+      },
+      "additionalProperties": false
+    },
+    "values": {
+      "type": "object",
+      "properties": {
+        "self_direction": { "$ref": "#/$defs/score" },
+        "stimulation": { "$ref": "#/$defs/score" },
+        "hedonism": { "$ref": "#/$defs/score" },
+        "achievement": { "$ref": "#/$defs/score" },
+        "power": { "$ref": "#/$defs/score" },
+        "security": { "$ref": "#/$defs/score" },
+        "conformity": { "$ref": "#/$defs/score" },
+        "tradition": { "$ref": "#/$defs/score" },
+        "benevolence": { "$ref": "#/$defs/score" },
+        "universalism": { "$ref": "#/$defs/score" }
+      },
+      "additionalProperties": false
+    },
+    "motivation": {
+      "type": "object",
+      "properties": {
+        "needs": { "type": "array", "items": { "type": "string" } },
+        "fears": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "affect": {
+      "type": "object",
+      "properties": {
+        "baseline": {
+          "type": "object",
+          "properties": {
+            "pleasure": { "$ref": "#/$defs/pad" },
+            "arousal": { "$ref": "#/$defs/pad" },
+            "dominance": { "$ref": "#/$defs/pad" }
+          },
+          "additionalProperties": false
+        },
+        "reactivity": { "$ref": "#/$defs/score" },
+        "recovery": { "$ref": "#/$defs/score" },
+        "expression": { "$ref": "#/$defs/score" },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["when", "effect"],
+            "properties": {
+              "when": { "type": "string" },
+              "effect": {
+                "type": "object",
+                "properties": {
+                  "pleasure": { "$ref": "#/$defs/delta" },
+                  "arousal": { "$ref": "#/$defs/delta" },
+                  "dominance": { "$ref": "#/$defs/delta" }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "formality": { "$ref": "#/$defs/score" },
+        "warmth_display": { "$ref": "#/$defs/score" },
+        "verbosity": { "$ref": "#/$defs/score" },
+        "directness": { "$ref": "#/$defs/score" },
+        "certainty_display": { "$ref": "#/$defs/score" },
+        "humor": {
+          "type": "object",
+          "properties": {
+            "frequency": { "$ref": "#/$defs/score" },
+            "styles": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        },
+        "lexicon": {
+          "type": "object",
+          "properties": {
+            "prefers": { "type": "array", "items": { "type": "string" } },
+            "avoids": { "type": "array", "items": { "type": "string" } }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "quirks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+          "text": { "type": "string" },
+          "frequency": { "enum": ["rare", "sometimes", "often", "always"], "default": "sometimes" },
+          "scope": { "type": "string", "default": "universal" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "context_modulation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["context", "adjust"],
+        "properties": {
+          "context": { "type": "string" },
+          "description": { "type": "string" },
+          "adjust": {
+            "type": "object",
+            "additionalProperties": { "type": "number", "minimum": -100, "maximum": 100 },
+            "minProperties": 1
+          },
+          "note": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "relationships": {
+      "type": "object",
+      "properties": {
+        "default_stance": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "boundaries": { "type": "array", "items": { "type": "string" } },
+    "compilation": {
+      "type": "object",
+      "properties": {
+        "language": { "type": "string", "default": "any" },
+        "notes": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "object", "additionalProperties": { "type": "string" } }
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "patternProperties": { "^x_": {} },
+  "additionalProperties": false,
+  "$defs": {
+    "score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "pad": { "type": "number", "minimum": -100, "maximum": 100 },
+    "delta": { "type": "number", "minimum": -100, "maximum": 100 },
+    "domain_hh": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "sincerity": { "$ref": "#/$defs/score" },
+                "fairness": { "$ref": "#/$defs/score" },
+                "greed_avoidance": { "$ref": "#/$defs/score" },
+                "modesty": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "domain_em": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "fearfulness": { "$ref": "#/$defs/score" },
+                "anxiety": { "$ref": "#/$defs/score" },
+                "dependence": { "$ref": "#/$defs/score" },
+                "sentimentality": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "domain_ex": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "social_self_esteem": { "$ref": "#/$defs/score" },
+                "social_boldness": { "$ref": "#/$defs/score" },
+                "sociability": { "$ref": "#/$defs/score" },
+                "liveliness": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "domain_ag": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "forgivingness": { "$ref": "#/$defs/score" },
+                "gentleness": { "$ref": "#/$defs/score" },
+                "flexibility": { "$ref": "#/$defs/score" },
+                "patience": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "domain_co": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "organization": { "$ref": "#/$defs/score" },
+                "diligence": { "$ref": "#/$defs/score" },
+                "perfectionism": { "$ref": "#/$defs/score" },
+                "prudence": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
+    "domain_op": {
+      "oneOf": [
+        { "$ref": "#/$defs/score" },
+        {
+          "type": "object",
+          "properties": {
+            "score": { "$ref": "#/$defs/score" },
+            "facets": {
+              "type": "object",
+              "properties": {
+                "aesthetic_appreciation": { "$ref": "#/$defs/score" },
+                "inquisitiveness": { "$ref": "#/$defs/score" },
+                "creativity": { "$ref": "#/$defs/score" },
+                "unconventionality": { "$ref": "#/$defs/score" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    }
+  }
+}

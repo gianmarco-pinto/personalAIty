@@ -1,0 +1,16 @@
+{
+  "name": "personalaity",
+  "version": "0.2.0",
+  "description": "An open specification for AI personality. Define it once, render it anywhere.",
+  "type": "module",
+  "bin": { "personalaity": "./bin/personalaity.js" },
+  "scripts": {
+    "test": "node test/smoke.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "license": "MIT",
+  "keywords": ["ai", "personality", "persona", "hexaco", "llm", "system-prompt", "character"]
+}
