@@ -2,7 +2,7 @@
 // Core principle: 50 = population average = silence. The prompt only says
 // what makes this persona DIFFERENT from an average person, so prompt length
 // scales with distinctiveness.
-import { flattenFacets } from '../load.js';
+import { flattenFacets } from '../facets.js';
 import { band, scopeOk, bandedLine, renderAdjust, renderEffect, compilationNote } from './util.js';
 import en from '../lang/en.js';
 import it from '../lang/it.js';

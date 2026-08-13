@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PersonalAIty — same personality, every medium</title>
+<meta name="description" content="Live demo of the PersonalAIty spec: tune HEXACO facets and watch the same persona compile into a chat system prompt and a social style guide.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.6rem 1.2rem;padding:1.4rem 2rem 1rem;border-bottom:1px solid var(--border)}
+  .wordmark{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+  .wordmark em{font-style:normal;color:var(--accent)}
+  .tag{margin:0;color:var(--dim);font-size:.95rem;flex:1 1 16rem}
+  .badge{font-family:var(--mono);font-size:.72rem;color:var(--dim);border:1px solid var(--border);border-radius:99px;padding:.15rem .6rem}
+  header nav a{font-size:.9rem;margin-left:.9rem}
+
+  main{display:grid;grid-template-columns:minmax(310px,380px) 1fr;gap:1.2rem;padding:1.2rem 2rem 2rem;max-width:1400px;margin:0 auto}
+  @media (max-width:900px){main{grid-template-columns:1fr}}
+
+  #presets{display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.9rem}
+  #presets button{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:99px;padding:.32rem .8rem;font-size:.82rem;cursor:pointer}
+  #presets button:hover{border-color:var(--accent)}
+  #presets button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+
+  #summary{color:var(--dim);font-size:.87rem;margin:.2rem 0 1rem;min-height:2.4em}
+  .legend{font-size:.75rem;color:var(--dim);margin:0 0 .8rem;font-family:var(--mono)}
+  .legend b{color:var(--accent);font-weight:600}
+
+  details.group{border:1px solid var(--border);border-radius:10px;background:var(--panel2);margin-bottom:.55rem;overflow:hidden}
+  details.group summary{cursor:pointer;padding:.55rem .9rem;font-size:.85rem;font-weight:650;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details.group summary::-webkit-details-marker{display:none}
+  details.group summary::after{content:'+';color:var(--dim);font-family:var(--mono)}
+  details.group[open] summary::after{content:'–'}
+  .rows{padding:.2rem .9rem .7rem}
+
+  .row{display:grid;grid-template-columns:9.5rem 1fr 2.4rem;gap:.7rem;align-items:center;padding:.22rem 0}
+  .row label{font-size:.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row input[type=range]{width:100%;accent-color:var(--accent);height:1rem;margin:0}
+  .val{font-family:var(--mono);font-size:.75rem;text-align:right;border-radius:5px;padding:.05rem .25rem}
+  .val.mid{color:var(--dim)}
+  .val.active{color:var(--accent)}
+  .val.extreme{color:#0e1014;background:var(--accent);font-weight:700}
+
+  .note{font-size:.75rem;color:var(--dim);margin-top:.8rem}
+
+  #right{min-width:0}
+  .tabs{display:flex;gap:.4rem;margin-bottom:.7rem;flex-wrap:wrap}
+  .tabs button{background:var(--panel);border:1px solid var(--border);color:var(--dim);border-radius:8px;padding:.4rem .95rem;font-size:.85rem;cursor:pointer;font-weight:600}
+  .tabs button.on{color:var(--text);border-color:var(--accent);background:var(--accent-soft)}
+  .tabs .spacer{flex:1}
+  .tabs .act{background:none;border:1px solid var(--border);color:var(--dim);font-weight:500}
+  .tabs .act:hover{color:var(--text);border-color:var(--accent)}
+
+  .outwrap{border:1px solid var(--border);border-radius:12px;background:var(--panel2);overflow:hidden}
+  pre#out{margin:0;padding:1.1rem 1.3rem;font-family:var(--mono);font-size:.8rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:72vh;overflow:auto}
+  pre#out .h{color:var(--accent);font-weight:700}
+  .meta{padding:.45rem 1.3rem;border-top:1px solid var(--border);color:var(--dim);font-family:var(--mono);font-size:.72rem;display:flex;justify-content:space-between}
+
+  footer{padding:1.2rem 2rem 2.2rem;border-top:1px solid var(--border);color:var(--dim);font-size:.85rem;max-width:1400px;margin:0 auto}
+  footer b{color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">Personal<em>AI</em>ty</div>
+  <p class="tag">An open spec for AI personality. Define it once, render it anywhere.</p>
+  <span class="badge">spec draft-01</span>
+  <nav>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/SPEC.md">Spec</a>
+  </nav>
+</header>
+
+<main>
+  <section id="left">
+    <div id="presets"></div>
+    <p id="summary"></p>
+    <p class="legend">dim = average human → compiles to silence · <b>amber</b> = distinctive → compiles to behavior</p>
+    <div id="controls"></div>
+    <p class="note">Quirks, emotional triggers, context modulation and hard rules come from the persona file — they compile too, but you edit those in YAML. This page tunes the dials.</p>
+  </section>
+
+  <section id="right">
+    <div class="tabs">
+      <button data-tab="chat" class="on">Chat prompt</button>
+      <button data-tab="social">Social guide</button>
+      <button data-tab="spec">Spec (JSON)</button>
+      <span class="spacer"></span>
+      <button class="act" id="copy">Copy</button>
+      <button class="act" id="download">Download</button>
+    </div>
+    <div class="outwrap">
+      <pre id="out"></pre>
+      <div class="meta"><span id="meta"></span><span>compiled live by the reference compilers</span></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <b>Why the output changes when you move a slider past ~65 or ~35:</b> 50 is the human population average, and average compiles to silence.
+  The prompt only says what makes this persona different — so its length scales with distinctiveness.
+  Built on HEXACO-PI-R facets, Schwartz values and PAD dynamics · <a href="https://github.com/gianmarco-pinto/personalAIty">source & gallery</a>
+</footer>
+
+<script type="module">
+import { compileChat } from '../src/compile/chat.js';
+import { compileSocial } from '../src/compile/social.js';
+import { band } from '../src/compile/util.js';
+import { PERSONAS } from './personas.js';
+
+const DOMAINS = [
+  ['honesty_humility', 'Honesty-Humility', ['sincerity', 'fairness', 'greed_avoidance', 'modesty']],
+  ['emotionality', 'Emotionality', ['fearfulness', 'anxiety', 'dependence', 'sentimentality']],
+  ['extraversion', 'Extraversion', ['social_self_esteem', 'social_boldness', 'sociability', 'liveliness']],
+  ['agreeableness', 'Agreeableness', ['forgivingness', 'gentleness', 'flexibility', 'patience']],
+  ['conscientiousness', 'Conscientiousness', ['organization', 'diligence', 'perfectionism', 'prudence']],
+  ['openness', 'Openness', ['aesthetic_appreciation', 'inquisitiveness', 'creativity', 'unconventionality']],
+];
+const VOICE = [
+  ['formality', 'Formality'], ['warmth_display', 'Warmth (displayed)'], ['verbosity', 'Verbosity'],
+  ['directness', 'Directness'], ['certainty_display', 'Certainty (displayed)'],
+];
+const label = (s) => s.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+const $ = (s) => document.querySelector(s);
+
+let state = null;
+let tab = 'chat';
+
+function normalize(p) {
+  const n = structuredClone(p);
+  n.traits ??= {};
+  for (const [dom, , facets] of DOMAINS) {
+    const v = n.traits[dom];
+    const base = typeof v === 'number' ? v : v?.score ?? 50;
+    const have = typeof v === 'object' && v ? v.facets ?? {} : {};
+    n.traits[dom] = { facets: Object.fromEntries(facets.map((f) => [f, have[f] ?? base])) };
+  }
+  n.traits.altruism ??= 50;
+  n.voice ??= {};
+  for (const [k] of VOICE) n.voice[k] ??= 50;
+  n.voice.humor ??= { frequency: 50, styles: [] };
+  n.voice.humor.frequency ??= 50;
+  return n;
+}
+
+function valClass(v) {
+  const b = band(v);
+  return b === 'mid' ? 'mid' : b === 'vlow' || b === 'vhigh' ? 'extreme' : 'active';
+}
+
+function row(text, value, onset) {
+  const div = document.createElement('div');
+  div.className = 'row';
+  const badge = `<span class="val ${valClass(value)}">${value}</span>`;
+  div.innerHTML = `<label title="${text}">${text}</label><input type="range" min="0" max="100" step="1" value="${value}">${badge}`;
+  const input = div.querySelector('input');
+  const val = div.querySelector('.val');
+  input.addEventListener('input', () => {
+    const v = Number(input.value);
+    val.textContent = v;
+    val.className = `val ${valClass(v)}`;
+    onset(v);
+    refresh();
+  });
+  return div;
+}
+
+function group(title, open = false) {
+  const d = document.createElement('details');
+  d.className = 'group';
+  if (open) d.open = true;
+  d.innerHTML = `<summary>${title}</summary><div class="rows"></div>`;
+  return [d, d.querySelector('.rows')];
+}
+
+function buildControls() {
+  const c = $('#controls');
+  c.innerHTML = '';
+
+  const [vg, vrows] = group('Voice', true);
+  for (const [k, lbl] of VOICE) vrows.appendChild(row(lbl, state.voice[k], (v) => (state.voice[k] = v)));
+  vrows.appendChild(row('Humor frequency', state.voice.humor.frequency, (v) => (state.voice.humor.frequency = v)));
+  c.appendChild(vg);
+
+  for (const [dom, name, facets] of DOMAINS) {
+    const [g, rows] = group(name);
+    for (const f of facets) rows.appendChild(row(label(f), state.traits[dom].facets[f], (v) => (state.traits[dom].facets[f] = v)));
+    c.appendChild(g);
+  }
+  const [ag, arows] = group('Altruism (interstitial)');
+  arows.appendChild(row('Altruism', state.traits.altruism, (v) => (state.traits.altruism = v)));
+  c.appendChild(ag);
+}
+
+function currentOutput() {
+  if (tab === 'chat') return compileChat(state, { lang: 'en' });
+  if (tab === 'social') return compileSocial(state, { lang: 'en' });
+  return JSON.stringify(state, null, 2);
+}
+
+function refresh() {
+  const out = currentOutput();
+  const pre = $('#out');
+  if (tab === 'spec') {
+    pre.textContent = out;
+  } else {
+    pre.innerHTML = out
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/^# (.+)$/gm, '<span class="h"># $1</span>');
+  }
+  $('#meta').textContent = `${out.length} chars · ~${Math.round(out.length / 4)} tokens`;
+}
+
+function selectPersona(i) {
+  state = normalize(PERSONAS[i]);
+  document.querySelectorAll('#presets button').forEach((b, j) => b.classList.toggle('on', i === j));
+  $('#summary').textContent = state.identity?.summary?.trim() ?? '';
+  buildControls();
+  refresh();
+}
+
+// presets
+PERSONAS.forEach((p, i) => {
+  const b = document.createElement('button');
+  b.textContent = p.name.replace(/^The /, '');
+  b.addEventListener('click', () => selectPersona(i));
+  $('#presets').appendChild(b);
+});
+
+// tabs
+document.querySelectorAll('.tabs [data-tab]').forEach((b) => {
+  b.addEventListener('click', () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll('.tabs [data-tab]').forEach((x) => x.classList.toggle('on', x === b));
+    refresh();
+  });
+});
+
+$('#copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText(currentOutput());
+  $('#copy').textContent = 'Copied ✓';
+  setTimeout(() => ($('#copy').textContent = 'Copy'), 1200);
+});
+
+$('#download').addEventListener('click', () => {
+  const spec = tab === 'spec';
+  const blob = new Blob([currentOutput()], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = spec ? `${state.id}.persona.json` : `${state.id}.${tab}.en.txt`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+selectPersona(0);
+</script>
+</body>
+</html>

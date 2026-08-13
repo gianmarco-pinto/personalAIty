@@ -1,14 +1,8 @@
 import { readFileSync } from 'node:fs';
 import yaml from 'js-yaml';
+import { FACETS } from './facets.js';
 
-export const FACETS = {
-  honesty_humility: ['sincerity', 'fairness', 'greed_avoidance', 'modesty'],
-  emotionality: ['fearfulness', 'anxiety', 'dependence', 'sentimentality'],
-  extraversion: ['social_self_esteem', 'social_boldness', 'sociability', 'liveliness'],
-  agreeableness: ['forgivingness', 'gentleness', 'flexibility', 'patience'],
-  conscientiousness: ['organization', 'diligence', 'perfectionism', 'prudence'],
-  openness: ['aesthetic_appreciation', 'inquisitiveness', 'creativity', 'unconventionality'],
-};
+export { FACETS, flattenFacets } from './facets.js';
 const SCHWARTZ = ['self_direction', 'stimulation', 'hedonism', 'achievement', 'power',
   'security', 'conformity', 'tradition', 'benevolence', 'universalism'];
 const TOP = ['persona_spec', 'id', 'name', 'version', 'description', 'authors', 'license',
@@ -78,19 +72,4 @@ export function loadPersona(path) {
   }
 
   return { persona: p, errors };
-}
-
-/** Expand traits into a flat {facetName: score|null} map. null = unspecified (silent). */
-export function flattenFacets(traits) {
-  const out = {};
-  for (const [dom, names] of Object.entries(FACETS)) {
-    const v = traits?.[dom];
-    for (const f of names) {
-      if (typeof v === 'number') out[f] = v;
-      else if (v && typeof v === 'object') out[f] = v.facets?.[f] ?? v.score ?? null;
-      else out[f] = null;
-    }
-  }
-  out.altruism = typeof traits?.altruism === 'number' ? traits.altruism : null;
-  return out;
 }

@@ -1,7 +1,7 @@
 // social compiler (L2): persona spec -> content style guide for social media.
 // English-only for now (project working language); the table structure is
 // ready for more languages. Same silence principle as chat: 50 = average = no rule.
-import { flattenFacets } from '../load.js';
+import { flattenFacets } from '../facets.js';
 import { band, scopeOk, bandedLine, renderAdjust, renderEffect, compilationNote } from './util.js';
 import en from '../lang/en.js';
 
