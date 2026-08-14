@@ -5,14 +5,15 @@
 export const GENERATED = '2026-08-14';
 export const DOMAIN_LABELS = ['Honesty-Humility', 'Emotionality', 'Extraversion', 'Agreeableness', 'Conscientiousness', 'Openness'];
 export const DOMAIN_SHORT = ['H-H', 'Emot', 'Extra', 'Agree', 'Consc', 'Open'];
-// Plain-language gloss for each domain: what a HIGH score means, then a LOW score.
+// Plain-language gloss for each domain: a one-line question, then what a
+// score near 100 (high) and near 0 (low) mean.
 export const DOMAIN_DESC = [
-  'Sincere, fair and modest — vs manipulative, entitled, out for itself',
-  'Anxious, sentimental, easily moved — vs detached, fearless, unshakeable',
-  'Outgoing, assertive, high-energy — vs reserved, quiet, keeps to itself',
-  'Patient, forgiving, gentle — vs blunt, critical, hard to sway',
-  'Organized, diligent, careful — vs casual, spontaneous, improvises',
-  'Curious, inventive, unconventional — vs practical, conventional, proven-only',
+  { q: 'Sincere, or out for itself?',        high: 'sincere, fair, modest, indifferent to money and status', low: 'manipulative, entitled, uses flattery to get its way' },
+  { q: 'Emotionally reactive, or detached?', high: 'anxious, sentimental, easily moved, wants reassurance',   low: 'calm, fearless, unshakeable under pressure' },
+  { q: 'Outgoing, or reserved?',             high: 'sociable, assertive, high-energy, speaks up first',        low: 'quiet, reserved, recharges alone' },
+  { q: 'Easygoing, or combative?',           high: 'patient, forgiving, gentle in judgment',                  low: 'blunt, critical, stands its ground and holds grudges' },
+  { q: 'Disciplined, or spontaneous?',       high: 'organized, diligent, careful, finishes what it starts',   low: 'casual, improvises, tolerates mess' },
+  { q: 'Curious, or conventional?',          high: 'inventive, curious, drawn to the unusual',                low: 'practical, conventional, sticks to the proven' },
 ];
 
 export const MODELS = [

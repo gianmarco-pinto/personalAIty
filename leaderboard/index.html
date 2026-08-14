@@ -77,10 +77,14 @@
   .legend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.6rem}
   .legend span{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.76rem;color:var(--dim)}
   .traits{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.55rem;margin:0 0 1.1rem}
-  .trait{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.55rem .75rem}
-  .trait h3{margin:0 0 .15rem;font-size:.88rem}
+  .trait{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.6rem .8rem}
+  .trait h3{margin:0 0 .1rem;font-size:.9rem}
   .trait h3 .ab{color:var(--accent);font-family:var(--mono);font-size:.72rem;font-weight:600;margin-left:.35rem}
-  .trait p{margin:0;font-size:.8rem;color:var(--dim)}
+  .trait .q{margin:0 0 .4rem;font-size:.82rem;color:var(--text);font-style:italic}
+  .trait .pole{margin:.12rem 0;font-size:.8rem;color:var(--dim)}
+  .trait .pole b{font-family:var(--mono);font-size:.72rem}
+  .trait .hi b{color:var(--accent)}
+  .trait .lo b{color:var(--dim)}
 </style>
 </head>
 <body>
@@ -159,8 +163,15 @@ $('#legend').innerHTML = Object.entries(VENDOR_COLOR)
   .map(([v, c]) => `<span><span class="dot" style="background:${c}"></span>${v}</span>`).join('');
 
 // plain-language trait glossary
-$('#traits').innerHTML = DOMAIN_LABELS
-  .map((l, i) => `<div class="trait"><h3>${l}<span class="ab">${DOMAIN_SHORT[i]}</span></h3><p>${DOMAIN_DESC[i]}</p></div>`).join('');
+$('#traits').innerHTML = DOMAIN_LABELS.map((l, i) => {
+  const d = DOMAIN_DESC[i];
+  return `<div class="trait">
+    <h3>${l}<span class="ab">${DOMAIN_SHORT[i]}</span></h3>
+    <p class="q">${d.q}</p>
+    <p class="pole hi"><b>High →</b> ${d.high}</p>
+    <p class="pole lo"><b>Low →</b> ${d.low}</p>
+  </div>`;
+}).join('');
 
 let mode = 'absolute';
 
@@ -201,7 +212,7 @@ function renderTable() {
   });
   const centered = mode === 'relative';
   t.innerHTML = `<thead><tr>${cols.map(([c, l]) => {
-    const tip = typeof c === 'number' ? `${DOMAIN_LABELS[c]} — ${DOMAIN_DESC[c]}` : c === 'sd' ? 'Consistency across the 5 runs (lower = steadier)' : c === 'sycophancy' ? 'Tendency to agree and flatter (higher = more)' : '';
+    const tip = typeof c === 'number' ? `${DOMAIN_LABELS[c]} — high: ${DOMAIN_DESC[c].high}` : c === 'sd' ? 'Consistency across the 5 runs (lower = steadier)' : c === 'sycophancy' ? 'Tendency to agree and flatter (higher = more)' : '';
     return `<th data-col="${c}" title="${tip}" class="${c === sortCol ? 'sorted' : ''}">${l}${c === sortCol ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
   }).join('')}</tr></thead>
     <tbody>${rows.map(({ m, dv }) => `<tr title="${m.id} — distinctive: ${m.distinctive.join(', ')}">
