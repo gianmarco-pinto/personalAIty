@@ -3,7 +3,9 @@
   "version": "0.3.2",
   "description": "An open specification for AI personality. Define it once, render it anywhere — HEXACO facets, Schwartz values, PAD dynamics, compiled to any medium and measurable.",
   "type": "module",
-  "bin": { "personalaity": "./bin/personalaity.js" },
+  "bin": {
+    "personalaity": "./bin/personalaity.js"
+  },
   "files": [
     "bin/",
     "src/",
@@ -12,11 +14,14 @@
     "SPEC.md"
   ],
   "scripts": {
-    "test": "node test/smoke.js && node test/eval-smoke.js",
+    "test": "node test/smoke.js && node test/eval-smoke.js && node --test test/unit.test.js test/schema.test.js test/golden.test.js",
+    "test:update-golden": "UPDATE_GOLDEN=1 node --test test/golden.test.js",
     "build:demo": "node scripts/build-demo-personas.js",
     "prepublishOnly": "npm test"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
@@ -25,8 +30,27 @@
   },
   "author": "Gianmarco Pinto",
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/gianmarco-pinto/personalAIty.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gianmarco-pinto/personalAIty.git"
+  },
   "homepage": "https://personalaity.dev",
-  "bugs": { "url": "https://github.com/gianmarco-pinto/personalAIty/issues" },
-  "keywords": ["ai", "personality", "persona", "hexaco", "llm", "system-prompt", "character", "psychometrics", "open-standard", "sycophancy"]
+  "bugs": {
+    "url": "https://github.com/gianmarco-pinto/personalAIty/issues"
+  },
+  "keywords": [
+    "ai",
+    "personality",
+    "persona",
+    "hexaco",
+    "llm",
+    "system-prompt",
+    "character",
+    "psychometrics",
+    "open-standard",
+    "sycophancy"
+  ],
+  "devDependencies": {
+    "ajv": "^8.20.0"
+  }
 }

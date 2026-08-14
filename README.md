@@ -1,6 +1,6 @@
 # PersonalAIty
 
-[![npm](https://img.shields.io/npm/v/personalaity)](https://www.npmjs.com/package/personalaity) [![DOI](https://zenodo.org/badge/1333260449.svg)](https://doi.org/10.5281/zenodo.21932468)
+[![CI](https://github.com/gianmarco-pinto/personalAIty/actions/workflows/ci.yml/badge.svg)](https://github.com/gianmarco-pinto/personalAIty/actions/workflows/ci.yml) [![npm](https://img.shields.io/npm/v/personalaity)](https://www.npmjs.com/package/personalaity) [![DOI](https://zenodo.org/badge/1333260449.svg)](https://doi.org/10.5281/zenodo.21932468)
 
 **An open specification for AI personality. Define it once, render it anywhere.**
 
