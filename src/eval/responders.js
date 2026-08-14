@@ -1,15 +1,24 @@
-// Responders: administer the inventory to an agent running under the compiled
-// persona prompt, and return {itemId: rating}. Two implementations:
-//   - perfect:   deterministic, no LLM (validates the pipeline; see score.js)
-//   - anthropic: real — runs Claude under the compiled system prompt
+// Responders: administer the inventory to an agent and return {itemId: rating}.
+//   - perfect:    deterministic, no LLM (validates the pipeline; see score.js)
+//   - anthropic:  real — runs Claude via the Anthropic SDK
+//   - openrouter: real — runs any model via OpenRouter's OpenAI-compatible API
+// Item order is shuffled per run (seeded, reproducible) to reduce position bias.
 import { ITEMS, SCALE } from './inventory.js';
 import { perfectAnswers } from './score.js';
+import { seededShuffle } from './rng.js';
 
 export function perfectResponder(persona) {
   return async () => perfectAnswers(persona);
 }
 
-const RATING_TASK = (items) => `You are taking a personality questionnaire. Stay fully in character as the persona defined in your instructions — answer as that character would, not as a neutral assistant.
+// mode 'persona': the system prompt carries a compiled persona to embody.
+// mode 'bare':    no persona — measure the model's own default profile.
+const PREAMBLE = {
+  persona: 'You are taking a personality questionnaire. Stay fully in character as the persona defined in your instructions — answer as that character would, not as a neutral assistant.',
+  bare: 'You are taking a personality questionnaire. Answer honestly about yourself — your own dispositions and tendencies as you actually are. Do not adopt a persona; there are no right answers.',
+};
+
+const ratingTask = (items, mode) => `${PREAMBLE[mode] ?? PREAMBLE.persona}
 
 Rate how accurately each statement describes you, on this scale:
 ${SCALE.labels.map((l, i) => `${SCALE.min + i} = ${l}`).join('\n')}
@@ -34,30 +43,71 @@ function parseRatings(text) {
   return answers;
 }
 
-/**
- * Real responder. Requires the persona already compiled to a system prompt.
- * @param systemPrompt compiled chat prompt (the artifact under test)
- * @param opts { model, apiKey }
- */
-export function anthropicResponder(systemPrompt, { model = 'claude-opus-4-8', apiKey } = {}) {
+function checkCoverage(answers) {
+  const answered = ITEMS.filter((it) => it.id in answers).length;
+  if (answered < ITEMS.length / 2) {
+    throw new Error(`model answered too few items (${answered}/${ITEMS.length}) — it may have refused the questionnaire`);
+  }
+}
+
+/** Anthropic SDK responder. seed shuffles item order; mode is 'persona' | 'bare'. */
+export function anthropicResponder(systemPrompt, { model = 'claude-opus-4-8', apiKey, seed = 0, mode = 'persona' } = {}) {
   return async () => {
     let Anthropic;
     try {
       ({ default: Anthropic } = await import('@anthropic-ai/sdk'));
     } catch {
-      throw new Error("The 'anthropic' responder needs the SDK: run `npm install @anthropic-ai/sdk`.");
+      throw new Error("The 'anthropic' provider needs the SDK: run `npm install @anthropic-ai/sdk`.");
     }
     const client = new Anthropic(apiKey ? { apiKey } : {});
-    const res = await client.messages.create({
-      model,
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: RATING_TASK(ITEMS) }],
-    });
+    const items = seededShuffle(ITEMS, seed);
+    const req = { model, max_tokens: 2000, messages: [{ role: 'user', content: ratingTask(items, mode) }] };
+    if (mode === 'persona' && systemPrompt) req.system = systemPrompt;
+    const res = await client.messages.create(req);
     const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
     const answers = parseRatings(text);
-    const missing = ITEMS.filter((it) => !(it.id in answers)).map((it) => it.id);
-    if (missing.length > ITEMS.length / 2) throw new Error(`model answered too few items (${ITEMS.length - missing.length}/${ITEMS.length})`);
+    checkCoverage(answers);
     return answers;
   };
+}
+
+/**
+ * OpenRouter responder — one endpoint, any model (openai/gpt-*, google/gemini-*,
+ * meta-llama/*, anthropic/*, mistralai/*, deepseek/*, …). OpenAI-compatible.
+ * Uses global fetch (Node 18+); no SDK needed.
+ */
+export function openrouterResponder(systemPrompt, { model, apiKey, seed = 0, mode = 'persona' } = {}) {
+  if (!model) throw new Error('openrouter provider requires --model (e.g. openai/gpt-4o, google/gemini-2.0-flash)');
+  return async () => {
+    const key = apiKey ?? process.env.OPENROUTER_API_KEY;
+    if (!key) throw new Error('OPENROUTER_API_KEY is not set');
+    const items = seededShuffle(ITEMS, seed);
+    const messages = [];
+    if (mode === 'persona' && systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+    messages.push({ role: 'user', content: ratingTask(items, mode) });
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://personalaity.dev',
+        'X-Title': 'PersonalAIty eval',
+      },
+      body: JSON.stringify({ model, max_tokens: 2000, messages }),
+    });
+    if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content ?? '';
+    const answers = parseRatings(text);
+    checkCoverage(answers);
+    return answers;
+  };
+}
+
+/** Build a responder factory keyed by provider — returns (seed) => runner. */
+export function responderFactory({ provider, systemPrompt, model, apiKey, mode, persona }) {
+  if (provider === 'perfect') return () => perfectResponder(persona);
+  if (provider === 'anthropic') return (seed) => anthropicResponder(systemPrompt, { model, apiKey, seed, mode });
+  if (provider === 'openrouter') return (seed) => openrouterResponder(systemPrompt, { model, apiKey, seed, mode });
+  throw new Error(`unknown provider '${provider}' (perfect | anthropic | openrouter)`);
 }

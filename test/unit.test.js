@@ -3,8 +3,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { band, scopeOk, renderAdjust } from '../src/compile/util.js';
-import { itemContribution, measureProfile, idealRating, sycophancyIndex } from '../src/eval/score.js';
+import { itemContribution, measureProfile, idealRating, sycophancyIndex, aggregate, correctForBaseline } from '../src/eval/score.js';
 import { ITEMS } from '../src/eval/inventory.js';
+import { seededShuffle, mulberry32 } from '../src/eval/rng.js';
 import en from '../src/lang/en.js';
 
 test('band boundaries are exact', () => {
@@ -83,4 +84,41 @@ test('renderAdjust turns a delta map into graded prose', () => {
   assert.equal(renderAdjust(en, { 'voice.directness': -20 }), 'less directness');
   assert.equal(renderAdjust(en, { 'voice.directness': -5 }), 'slightly less directness');
   assert.equal(renderAdjust(en, { 'voice.directness': 0 }), ''); // zero deltas are silent
+});
+
+test('seededShuffle is deterministic, reproducible, and lossless', () => {
+  const a = [1, 2, 3, 4, 5, 6, 7, 8];
+  const s1 = seededShuffle(a, 42);
+  const s2 = seededShuffle(a, 42);
+  const s3 = seededShuffle(a, 43);
+  assert.deepEqual(s1, s2, 'same seed → same order');
+  assert.notDeepEqual(s1, s3, 'different seed → different order');
+  assert.deepEqual([...s1].sort(), a, 'no element lost or duplicated');
+  assert.deepEqual(a, [1, 2, 3, 4, 5, 6, 7, 8], 'input not mutated');
+});
+
+test('mulberry32 stays in [0,1)', () => {
+  const rng = mulberry32(123);
+  for (let i = 0; i < 100; i++) {
+    const v = rng();
+    assert.ok(v >= 0 && v < 1);
+  }
+});
+
+test('aggregate returns per-facet mean and std', () => {
+  const agg = aggregate([{ sincerity: 80 }, { sincerity: 100 }, { sincerity: 90 }]);
+  assert.equal(agg.mean.sincerity, 90);
+  assert.equal(agg.std.sincerity, 8); // popn std of {80,100,90} = 8.16 → 8
+  assert.equal(agg.n, 3);
+});
+
+test('correctForBaseline subtracts model bias and clamps', () => {
+  // Model over-reports by +30 on gentleness even with no persona.
+  const corrected = correctForBaseline({ gentleness: 90 }, { gentleness: 80 });
+  assert.equal(corrected.gentleness, 60); // 90 - (80 - 50)
+  // Clamp: correction can't push below 0.
+  const clamped = correctForBaseline({ anxiety: 5 }, { anxiety: 90 });
+  assert.equal(clamped.anxiety, 0);
+  // Facet with no baseline passes through unchanged.
+  assert.equal(correctForBaseline({ prudence: 70 }, {}).prudence, 70);
 });
