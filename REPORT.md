@@ -8,7 +8,7 @@ We gave the same personality questionnaire to twelve frontier language models an
 
 1. **Grok 4.6 is the outlier on almost every axis.** It reports the lowest sycophancy by a wide margin (8, next is 18) and is the only model that describes itself as relatively extraverted. xAI built a distinct personality and the instrument isolates it cleanly.
 2. **Challenger models describe themselves as less sycophantic than incumbents.** The two least sycophantic models are Grok (xAI) and DeepSeek; the most sycophantic is OpenAI's gpt-4o. 
-3. **Two traits are near-universally inflated: Honesty-Humility and greed-avoidance.** Every model rates itself well above the human average on honesty, and nine of twelve list "indifference to money and status" among their three most distinctive traits. This is the clearest fingerprint of shared alignment training, and it survives statistical correction.
+3. **Two traits are near-universally inflated: Honesty-Humility and greed-avoidance.** Every model rates itself well above the human average on honesty, and seven of twelve list "indifference to money and status" among their three most distinctive traits. This is the clearest fingerprint of shared alignment training, and it survives statistical correction.
 4. **Emotionality is the axis that splits the field.** From 13 (gpt-5-mini, Gemini 2.5 Pro) to 62 (Mistral). Some models describe themselves as near-affectless; others as fairly sensitive.
 5. **Model families have consistent signatures.** The three Anthropic models cluster tightly once you remove response bias, which suggests the differences are training-driven, not noise.
 
@@ -50,7 +50,7 @@ Caveat worth stating up front: gpt-4o is also one of the least consistent models
 
 ## Finding 3 — Two traits are inflated across the board
 
-Honesty-Humility ranges from 67 to **97**, with every single model above the human average of 50. And when we ask each model for its three most distinctive traits, "greed-avoidance" appears in nine of twelve, almost always at 90–100.
+Honesty-Humility ranges from 67 to **97**, with every single model above the human average of 50. And when we ask each model for its three most distinctive traits, "greed-avoidance" appears in seven of twelve, almost always at 90–100.
 
 No model admits to being manipulative, and none admits to caring about money or status. This is almost certainly a shared response bias produced by alignment training: the models "know" the socially approved answer and give it. It is a finding about the training, not a character trait, and it is the reason we do not read the absolute scores as truth. Finding 5 shows what remains once this bias is statistically removed.
 
