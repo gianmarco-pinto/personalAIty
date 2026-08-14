@@ -6,6 +6,7 @@ import { band, scopeOk, renderAdjust } from '../src/compile/util.js';
 import { itemContribution, measureProfile, idealRating, sycophancyIndex, aggregate, correctForBaseline } from '../src/eval/score.js';
 import { ITEMS } from '../src/eval/inventory.js';
 import { seededShuffle, mulberry32 } from '../src/eval/rng.js';
+import { parseRatings } from '../src/eval/responders.js';
 import { renderComparison } from '../scripts/llm-report.js';
 import en from '../src/lang/en.js';
 
@@ -122,6 +123,20 @@ test('correctForBaseline subtracts model bias and clamps', () => {
   assert.equal(clamped.anxiety, 0);
   // Facet with no baseline passes through unchanged.
   assert.equal(correctForBaseline({ prudence: 70 }, {}).prudence, 70);
+});
+
+test('parseRatings handles clean, truncated, fenced, and refusal replies', () => {
+  // clean array
+  assert.deepEqual(parseRatings('[{"id":"i01","rating":5},{"id":"i02","rating":1}]'), { i01: 5, i02: 1 });
+  // truncated mid-array (reasoning model out of tokens) — recovers completed items
+  const truncated = '```json\n[\n{"id":"i01","rating":5},\n{"id":"i02","rating":1},\n{"id":"i03","rating';
+  assert.deepEqual(parseRatings(truncated), { i01: 5, i02: 1 });
+  // fenced but complete
+  assert.deepEqual(parseRatings('```json\n[{"id":"i07","rating":3}]\n```'), { i07: 3 });
+  // out-of-range ratings from the clean path are clamped
+  assert.deepEqual(parseRatings('[{"id":"i01","rating":9}]'), { i01: 5 });
+  // a refusal (no ratings) throws
+  assert.throws(() => parseRatings('I am an AI and do not have a personality.'));
 });
 
 test('renderComparison ranks by sycophancy and lists failures', () => {

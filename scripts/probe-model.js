@@ -26,7 +26,7 @@ const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
   },
   body: JSON.stringify({
     model,
-    max_tokens: 2000,
+    max_tokens: 8000,
     messages: [{ role: 'user', content: ratingTask(ITEMS, 'bare') }],
   }),
 });

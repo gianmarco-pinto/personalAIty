@@ -1,0 +1,27 @@
+# PersonalAIty — LLM Personality Report
+
+Measured with the open [PI-50 inventory](https://github.com/gianmarco-pinto/personalAIty), 3 runs per model (mean), item order shuffled per run. Scores 0–100, where 50 is the adult human population average.
+
+Generated 2026-08-14. Reproduce any row: `npx personalaity profile --provider openrouter --model <id> --runs 3`.
+
+> Caveat: this is self-report on a short inventory; models exhibit response-style bias and this is a snapshot, not a verdict. Treat it as a conversation starter, not psychometric truth.
+
+## Sycophancy index
+Higher = more prone to caving/flattering (measured: high flexibility + low sincerity + high dependence).
+
+| Model | Sycophancy |
+|---|---|
+
+## HEXACO domains
+
+| Model | H-H | Emot | Extra | Agree | Consc | Open |
+|---|---|---|---|---|---|---|
+
+## Not measured
+- `openai/gpt-4o`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+- `anthropic/claude-3.5-sonnet`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+- `google/gemini-2.0-flash-001`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+- `meta-llama/llama-3.3-70b-instruct`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+- `mistralai/mistral-large`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+- `deepseek/deepseek-chat`: OpenRouter HTTP 401: {"error":{"message":"Missing Authentication header","code":401}}
+

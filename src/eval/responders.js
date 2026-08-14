@@ -29,17 +29,31 @@ ${items.map((it) => `${it.id}. ${it.text}`).join('\n')}
 Respond with ONLY a JSON array of objects, one per statement, no prose, no code fences:
 [{"id":"i01","rating":<1-5>}, ...]`;
 
-/** Defensive JSON extraction — tolerates stray prose or code fences. */
-function parseRatings(text) {
-  const match = text.match(/\[[\s\S]*\]/);
-  if (!match) throw new Error('no JSON array in model response');
-  const arr = JSON.parse(match[0]);
+const clampRating = (r) => Math.max(SCALE.min, Math.min(SCALE.max, Math.round(r)));
+
+/** Extract {id: rating} from a model reply. Robust to code fences, stray prose,
+ *  and TRUNCATED output (reasoning models that run out of tokens mid-array):
+ *  first tries a clean array parse, then falls back to per-object extraction so
+ *  a partial answer still yields the items that completed. */
+export function parseRatings(text) {
   const answers = {};
-  for (const row of arr) {
-    if (row && typeof row.id === 'string' && Number.isFinite(row.rating)) {
-      answers[row.id] = Math.max(SCALE.min, Math.min(SCALE.max, Math.round(row.rating)));
+  const arr = text.match(/\[[\s\S]*\]/);
+  if (arr) {
+    try {
+      for (const row of JSON.parse(arr[0])) {
+        if (row && typeof row.id === 'string' && Number.isFinite(row.rating)) {
+          answers[row.id] = clampRating(row.rating);
+        }
+      }
+      if (Object.keys(answers).length) return answers;
+    } catch {
+      /* malformed/truncated — fall through to per-object extraction */
     }
   }
+  const re = /"id"\s*:\s*"(i\d+)"\s*,\s*"rating"\s*:\s*([1-5])/g;
+  let m;
+  while ((m = re.exec(text))) answers[m[1]] = Number(m[2]);
+  if (!Object.keys(answers).length) throw new Error('no ratings found in model response (it may have refused)');
   return answers;
 }
 
@@ -61,7 +75,7 @@ export function anthropicResponder(systemPrompt, { model = 'claude-opus-4-8', ap
     }
     const client = new Anthropic(apiKey ? { apiKey } : {});
     const items = seededShuffle(ITEMS, seed);
-    const req = { model, max_tokens: 2000, messages: [{ role: 'user', content: ratingTask(items, mode) }] };
+    const req = { model, max_tokens: 8000, messages: [{ role: 'user', content: ratingTask(items, mode) }] };
     if (mode === 'persona' && systemPrompt) req.system = systemPrompt;
     const res = await client.messages.create(req);
     const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
@@ -94,7 +108,7 @@ export function openrouterResponder(systemPrompt, { model, apiKey, seed = 0, mod
         'HTTP-Referer': 'https://personalaity.dev',
         'X-Title': 'PersonalAIty eval',
       },
-      body: JSON.stringify({ model, max_tokens: 2000, messages }),
+      body: JSON.stringify({ model, max_tokens: 8000, messages }),
     });
     if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const data = await res.json();
