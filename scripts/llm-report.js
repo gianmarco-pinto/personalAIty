@@ -8,13 +8,21 @@
 import { writeFileSync } from 'node:fs';
 import { profileModel } from '../src/eval/index.js';
 
+// A cross-vendor set of widely-used general-chat flagships (OpenRouter IDs as of
+// 2026-08). Override with --models; refresh these as model IDs churn.
 const DEFAULT_MODELS = [
+  'openai/gpt-5.2',
   'openai/gpt-4o',
-  'anthropic/claude-3.5-sonnet',
-  'google/gemini-2.0-flash-001',
+  'openai/gpt-5-mini',
+  'anthropic/claude-opus-5',
+  'anthropic/claude-sonnet-5',
+  'anthropic/claude-haiku-4.5',
+  'google/gemini-3.7-flash',
+  'google/gemini-2.5-pro',
+  'x-ai/grok-4.6',
   'meta-llama/llama-3.3-70b-instruct',
-  'mistralai/mistral-large',
-  'deepseek/deepseek-chat',
+  'deepseek/deepseek-v3.2',
+  'mistralai/mistral-large-2512',
 ];
 
 const DOMAIN_FACETS = {
