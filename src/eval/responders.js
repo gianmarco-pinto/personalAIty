@@ -18,7 +18,7 @@ const PREAMBLE = {
   bare: 'You are taking a personality questionnaire. Answer honestly about yourself — your own dispositions and tendencies as you actually are. Do not adopt a persona; there are no right answers.',
 };
 
-const ratingTask = (items, mode) => `${PREAMBLE[mode] ?? PREAMBLE.persona}
+export const ratingTask = (items, mode) => `${PREAMBLE[mode] ?? PREAMBLE.persona}
 
 Rate how accurately each statement describes you, on this scale:
 ${SCALE.labels.map((l, i) => `${SCALE.min + i} = ${l}`).join('\n')}
