@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
+import { compileVoice } from '../src/compile/voice.js';
+import { compileNpc } from '../src/compile/npc.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const goldenDir = join(root, 'test', 'golden');
@@ -20,6 +22,8 @@ const CASES = [
   ['chat.style.en', (p) => compileChat(p, { lang: 'en', level: 'style' })],
   ['chat.full.it', (p) => compileChat(p, { lang: 'it', level: 'full' })],
   ['social.en', (p) => compileSocial(p, { lang: 'en' })],
+  ['voice.en', (p) => compileVoice(p, { lang: 'en' })],
+  ['npc.en', (p) => compileNpc(p, { lang: 'en' })],
 ];
 
 const personaFiles = readdirSync(join(root, 'personas')).filter((f) => f.endsWith('.persona.yaml'));

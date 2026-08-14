@@ -44,14 +44,16 @@ Six personas ship with the spec. They are simultaneously examples, presets, and 
 3. Compile it (no install needed):
 
 ```bash
-npx personalaity compile my-hero.persona.yaml                  # → system prompt
+npx personalaity compile my-hero.persona.yaml                  # → chat system prompt
 npx personalaity compile my-hero.persona.yaml --target social  # → content style guide
+npx personalaity compile my-hero.persona.yaml --target voice   # → prosody parameters
+npx personalaity compile my-hero.persona.yaml --target npc     # → behavior weights + dialogue
 npx personalaity validate my-hero.persona.yaml
 ```
 
 Working from a clone instead? `npm install`, then `node bin/personalaity.js` with the same arguments.
 
-Same file, two media — that is the whole point. Compare [the chat prompt](examples/honest-sparring.chat.en.txt) with [the social voice guide](examples/honest-sparring.social.en.txt) compiled from the same persona.
+Same file, four media — that is the whole point. One persona compiles into a [chat prompt](examples/honest-sparring.chat.en.txt), a [social voice guide](examples/honest-sparring.social.en.txt), [prosody parameters](examples/honest-sparring.voice.en.txt), and — the proof it isn't chat-only — [NPC behavior weights](examples/gruff-heart-of-gold.npc.en.txt) where the Gruff Heart of Gold scores helpfulness 88 *and* hostility 85 at once (grumbles at you while saving your life). Five flat sliders can't say that.
 
 Then **measure** whether the compiled persona actually expresses what the spec declared:
 
@@ -129,7 +131,7 @@ boundaries:                # override everything, always
 - **v0.1** — ✅ spec draft, JSON Schema, six-persona gallery
 - **v0.2** — ✅ reference `chat` compiler (persona → system prompt, trait→marker mapping tables) · ✅ `social` compiler (persona → content style guide) · ⏳ `--translate` for freeform fields
 - **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ⏳ behavioral sycophancy battery (scenario probes + LLM judge), drift tracking across model versions, MCP server exposing `check_personality`
-- **v0.4** — `voice` compiler (prosody parameters), `npc` compiler (behavior weights), runtime state reference implementation
+- **v0.4** — ✅ `voice` compiler (prosody parameters) · ✅ `npc` compiler (behavior weights + dialogue profile) · ⏳ runtime state reference implementation (live PAD mood for companions/NPCs)
 
 ## Scientific grounding
 

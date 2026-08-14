@@ -1,6 +1,6 @@
 {
   "name": "personalaity",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "An open specification for AI personality. Define it once, render it anywhere — HEXACO facets, Schwartz values, PAD dynamics, compiled to any medium and measurable.",
   "type": "module",
   "bin": {

@@ -5,12 +5,16 @@ import { fileURLToPath } from 'node:url';
 import { loadPersona } from '../src/load.js';
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
+import { compileVoice } from '../src/compile/voice.js';
+import { compileNpc } from '../src/compile/npc.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const personasDir = join(root, 'personas');
 const targets = [
   ['chat', compileChat, ['en', 'it']],
   ['social', compileSocial, ['en']],
+  ['voice', compileVoice, ['en']],
+  ['npc', compileNpc, ['en']],
 ];
 let failures = 0;
 

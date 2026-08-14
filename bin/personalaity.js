@@ -4,6 +4,8 @@ import { writeFileSync } from 'node:fs';
 import { loadPersona } from '../src/load.js';
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
+import { compileVoice } from '../src/compile/voice.js';
+import { compileNpc } from '../src/compile/npc.js';
 import { runEval, profileModel, formatReport, formatModelProfile } from '../src/eval/index.js';
 
 const HELP = `personalaity v0.3
@@ -108,7 +110,7 @@ if (cmd === 'compile') {
     process.exit(1);
   }
   const target = args.target ?? 'chat';
-  const compilers = { chat: compileChat, social: compileSocial };
+  const compilers = { chat: compileChat, social: compileSocial, voice: compileVoice, npc: compileNpc };
   if (!compilers[target]) {
     console.error(`✗ target '${target}' not implemented yet (available: ${Object.keys(compilers).join(', ')})`);
     process.exit(1);
