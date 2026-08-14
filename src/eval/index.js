@@ -6,13 +6,21 @@ import { measureProfile, scoreAdherence, aggregate, correctForBaseline, sycophan
 import { responderFactory } from './responders.js';
 
 /** Run each seeded run, measure, and aggregate into {mean, std, n, profiles}. */
+// Tolerant of flaky runs: a reasoning model that truncates on one run of five
+// is still measured from the runs that succeeded. Fails only if every run does.
 async function measureAggregate(factory, { runs, seed }) {
   const profiles = [];
+  const errors = [];
   for (let i = 0; i < runs; i++) {
-    const answers = await factory(seed + i)();
-    profiles.push(measureProfile(answers));
+    try {
+      const answers = await factory(seed + i)();
+      profiles.push(measureProfile(answers));
+    } catch (e) {
+      errors.push(e.message);
+    }
   }
-  return { ...aggregate(profiles), profiles };
+  if (!profiles.length) throw new Error(`all ${runs} run(s) failed — first error: ${errors[0]}`);
+  return { ...aggregate(profiles), profiles, attempted: runs, succeeded: profiles.length };
 }
 
 /**
@@ -64,7 +72,8 @@ export async function profileModel(opts = {}) {
   return {
     model,
     provider,
-    runs,
+    runs: agg.succeeded,
+    runsAttempted: agg.attempted,
     profile: agg.mean,
     std: agg.std,
     sycophancy: sycophancyIndex(agg.mean),

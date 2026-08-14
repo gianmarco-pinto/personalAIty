@@ -72,7 +72,8 @@ export function renderComparison(results, { runs, date }) {
     const cells = heads.map((h) => domainScore(r.profile, DOMAIN_FACETS[h]) ?? '—');
     const stds = r.std ? Object.values(r.std) : [];
     const avgStd = stds.length ? Math.round(stds.reduce((a, b) => a + b, 0) / stds.length) : '—';
-    L.push(`| ${r.model} | ${cells.join(' | ')} | ${avgStd} |`);
+    const name = r.runsAttempted && r.runs < r.runsAttempted ? `${r.model} (${r.runs}/${r.runsAttempted} runs)` : r.model;
+    L.push(`| ${name} | ${cells.join(' | ')} | ${avgStd} |`);
   }
   L.push('');
 
@@ -119,8 +120,8 @@ async function main() {
     process.stderr.write(`profiling ${model} … `);
     try {
       const r = await profileModel({ provider: 'openrouter', model, runs });
-      results.push({ model, ok: true, profile: r.profile, sycophancy: r.sycophancy, std: r.std });
-      process.stderr.write('ok\n');
+      results.push({ model, ok: true, profile: r.profile, sycophancy: r.sycophancy, std: r.std, runs: r.runs, runsAttempted: r.runsAttempted });
+      process.stderr.write(r.runs < r.runsAttempted ? `ok (${r.runs}/${r.runsAttempted} runs)\n` : 'ok\n');
     } catch (e) {
       results.push({ model, ok: false, error: e.message });
       process.stderr.write(`FAILED (${e.message})\n`);
