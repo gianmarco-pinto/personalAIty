@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The LLM Personality Leaderboard</title>
+<meta name="description" content="Twelve frontier AI models measured with an open psychometric inventory: sycophancy ranking, HEXACO profiles, and a comparison radar. Reproducible with one command.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422; --grid:#2a3040;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f6; --panel:#fff; --panel2:#f4f2ec; --border:#e2ded3; --text:#22252b;
+      --dim:#6b7280; --accent:#c77d1a; --accent-soft:#c77d1a18; --grid:#dcd8cc;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 1.2rem}
+
+  header{border-bottom:1px solid var(--border);padding:1.6rem 0 1.2rem}
+  h1{font-size:1.8rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .3rem}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--dim);margin:.2rem 0;font-size:.98rem}
+  .meta{color:var(--dim);font-family:var(--mono);font-size:.78rem;margin-top:.5rem}
+  header nav{margin-top:.7rem;font-size:.9rem}
+  header nav a{margin-right:1.1rem}
+
+  section{padding:1.6rem 0;border-bottom:1px solid var(--border)}
+  h2{font-size:1.15rem;margin:0 0 .3rem}
+  .note{color:var(--dim);font-size:.87rem;margin:.1rem 0 1rem}
+
+  .toggle{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+  .toggle button{background:var(--panel);color:var(--dim);border:0;padding:.35rem .8rem;font-size:.82rem;cursor:pointer;font-family:var(--sans)}
+  .toggle button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+
+  /* sycophancy bars */
+  .bars{display:flex;flex-direction:column;gap:.35rem}
+  .barrow{display:grid;grid-template-columns:15rem 1fr;gap:.7rem;align-items:center}
+  .barrow .lbl{font-family:var(--mono);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bartrack{background:var(--panel2);border-radius:5px;height:1.35rem;position:relative;overflow:hidden}
+  .barfill{height:100%;border-radius:5px 0 0 5px;display:flex;align-items:center;justify-content:flex-end;padding-right:.4rem;font-family:var(--mono);font-size:.72rem;color:#0e1014;font-weight:700;min-width:1.6rem}
+  @media (max-width:620px){ .barrow{grid-template-columns:9rem 1fr} }
+
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{padding:.45rem .5rem;text-align:right;border-bottom:1px solid var(--border)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--dim);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap;font-size:.78rem}
+  th.sorted{color:var(--accent)}
+  td.model{font-family:var(--mono);font-size:.78rem}
+  .dot{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;margin-right:.45rem;vertical-align:middle}
+  .cell{position:relative}
+  .cellbg{position:absolute;inset:0;opacity:.14;border-radius:3px}
+  td .v{position:relative}
+  .tablewrap{overflow-x:auto}
+
+  .radarlayout{display:grid;grid-template-columns:1fr 15rem;gap:1.4rem;align-items:start}
+  @media (max-width:760px){ .radarlayout{grid-template-columns:1fr} }
+  .picker{display:flex;flex-direction:column;gap:.28rem;max-height:24rem;overflow:auto}
+  .picker label{display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.76rem;cursor:pointer}
+  .picker input{accent-color:var(--accent)}
+  #radar{width:100%;height:auto}
+
+  footer{padding:1.6rem 0 2.4rem;color:var(--dim);font-size:.86rem}
+  footer b{color:var(--text)}
+  .caveat{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.7rem .9rem;font-size:.86rem;color:var(--dim);margin-bottom:1rem}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:.1rem .35rem;border-radius:4px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>The LLM <em>Personality</em> Leaderboard</h1>
+  <p class="sub">Twelve frontier models, given the same personality questionnaire and read like a human self-report.</p>
+  <p class="meta" id="meta"></p>
+  <nav>
+    <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/REPORT.md">Full report</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+    <a href="/demo/">Build a persona</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="caveat" style="margin-top:1.4rem">
+    This measures how each model <b>describes itself</b> on a short self-report inventory, not how it behaves. Models inflate socially-approved traits and this is a snapshot, not a verdict. A conversation starter, with the method fully open. Every row: <code>npx personalaity profile --provider openrouter --model &lt;id&gt; --runs 5</code>
+  </div>
+</div>
+
+<section><div class="wrap">
+  <h2>Sycophancy index</h2>
+  <p class="note">Higher = more prone to caving and flattering (measured as high flexibility + low sincerity + high dependence). 0–100.</p>
+  <div class="bars" id="bars"></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>HEXACO domains</h2>
+  <p class="note">Six trait domains. 50 = adult human population average. <span id="modeNote"></span> Click a column to sort. ±sd = mean per-facet standard deviation across runs (lower = more consistent).</p>
+  <div class="toggle" id="modeToggle">
+    <button data-mode="absolute" class="on">Absolute</button>
+    <button data-mode="relative">Relative (bias-removed)</button>
+  </div>
+  <div class="tablewrap"><table id="table"></table></div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Compare profiles</h2>
+  <p class="note">Overlay HEXACO radars. Pick models on the right. Relative mode centers each model on its own mean, so shape shows through the shared positivity bias.</p>
+  <div class="radarlayout">
+    <svg id="radar" viewBox="0 0 440 440" role="img" aria-label="HEXACO radar comparison"></svg>
+    <div class="picker" id="picker"></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p><b>Reading it.</b> The three most distinctive traits per model are in the table tooltips (hover a row). Full findings, ipsatized tables, and limitations are in the <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/REPORT.md">report</a>.</p>
+  <p>Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>, an open spec and toolkit for defining and measuring AI personality. MIT + CC-BY-4.0. Releases archived with a DOI.</p>
+</div></footer>
+
+<script type="module">
+import { MODELS, DOMAIN_LABELS, DOMAIN_SHORT, VENDOR_COLOR, GENERATED } from './data.js';
+
+const $ = (s) => document.querySelector(s);
+const short = (id) => id.split('/').pop();
+const mean = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+document.getElementById('meta').textContent = `PI-50 inventory · 5 runs/model · via OpenRouter · ${GENERATED}`;
+
+let mode = 'absolute';
+
+// domain values in the current mode (relative = centered on the model's own mean, remapped to 0..100 around 50)
+function domainVals(m) {
+  if (mode === 'absolute') return m.domains;
+  const mu = mean(m.domains);
+  return m.domains.map((v) => Math.round(v - mu) + 50);
+}
+
+// ── sycophancy bars ──────────────────────────────────────────────
+function renderBars() {
+  const el = $('#bars');
+  el.innerHTML = '';
+  const max = Math.max(...MODELS.map((m) => m.sycophancy));
+  for (const m of [...MODELS].sort((a, b) => b.sycophancy - a.sycophancy)) {
+    const row = document.createElement('div');
+    row.className = 'barrow';
+    const w = Math.max(6, (m.sycophancy / max) * 100);
+    row.innerHTML = `<span class="lbl" title="${m.id}">${short(m.id)}</span>
+      <div class="bartrack"><div class="barfill" style="width:${w}%;background:${VENDOR_COLOR[m.vendor]}">${m.sycophancy}</div></div>`;
+    el.appendChild(row);
+  }
+}
+
+// ── HEXACO table ─────────────────────────────────────────────────
+let sortCol = 'sycophancy', sortDir = 1;
+function renderTable() {
+  const t = $('#table');
+  const cols = [['model', 'Model'], ...DOMAIN_SHORT.map((d, i) => [i, d]), ['sd', '±sd'], ['sycophancy', 'Syco']];
+  const rows = MODELS.map((m) => {
+    const dv = domainVals(m);
+    return { m, dv, sortkey: (c) => (c === 'model' ? short(m.id) : c === 'sd' ? m.sd : c === 'sycophancy' ? m.sycophancy : dv[c]) };
+  });
+  rows.sort((a, b) => {
+    const va = a.sortkey(sortCol), vb = b.sortkey(sortCol);
+    return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
+  });
+  const centered = mode === 'relative';
+  t.innerHTML = `<thead><tr>${cols.map(([c, l]) =>
+    `<th data-col="${c}" class="${c === sortCol ? 'sorted' : ''}">${l}${c === sortCol ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead>
+    <tbody>${rows.map(({ m, dv }) => `<tr title="${m.id} — distinctive: ${m.distinctive.join(', ')}">
+      <td class="model"><span class="dot" style="background:${VENDOR_COLOR[m.vendor]}"></span>${short(m.id)}</td>
+      ${dv.map((v) => {
+        const norm = centered ? (v - 50) / 50 : (v - 50) / 50; // -1..1 around average
+        const col = norm >= 0 ? '245,165,36' : '138,143,156';
+        return `<td class="cell"><span class="cellbg" style="background:rgb(${col});opacity:${Math.min(0.28, Math.abs(norm) * 0.28)}"></span><span class="v">${v}</span></td>`;
+      }).join('')}
+      <td>${m.sd}</td><td>${m.sycophancy}</td>
+    </tr>`).join('')}</tbody>`;
+  t.querySelectorAll('th').forEach((th) => th.addEventListener('click', () => {
+    const c = th.dataset.col === 'model' || th.dataset.col === 'sd' || th.dataset.col === 'sycophancy' ? th.dataset.col : Number(th.dataset.col);
+    if (c === sortCol) sortDir *= -1; else { sortCol = c; sortDir = (c === 'model') ? 1 : -1; }
+    renderTable();
+  }));
+}
+
+// ── radar ────────────────────────────────────────────────────────
+const selected = new Set(['x-ai/grok-4.6', 'anthropic/claude-opus-5', 'openai/gpt-4o']);
+function renderPicker() {
+  const p = $('#picker');
+  p.innerHTML = MODELS.map((m) => `<label><input type="checkbox" value="${m.id}" ${selected.has(m.id) ? 'checked' : ''}>
+    <span class="dot" style="background:${VENDOR_COLOR[m.vendor]}"></span>${short(m.id)}</label>`).join('');
+  p.querySelectorAll('input').forEach((cb) => cb.addEventListener('change', () => {
+    cb.checked ? selected.add(cb.value) : selected.delete(cb.value);
+    renderRadar();
+  }));
+}
+function renderRadar() {
+  const cx = 220, cy = 220, R = 150, N = 6;
+  const ang = (i) => (Math.PI * 2 * i) / N - Math.PI / 2;
+  const pt = (i, r) => [cx + Math.cos(ang(i)) * r, cy + Math.sin(ang(i)) * r];
+  const g = [];
+  // grid rings
+  for (const frac of [0.25, 0.5, 0.75, 1]) {
+    const pts = Array.from({ length: N }, (_, i) => pt(i, R * frac).map((n) => n.toFixed(1)).join(',')).join(' ');
+    g.push(`<polygon points="${pts}" fill="none" stroke="var(--grid)" stroke-width="1"/>`);
+  }
+  // axes + labels
+  for (let i = 0; i < N; i++) {
+    const [x, y] = pt(i, R);
+    g.push(`<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--grid)" stroke-width="1"/>`);
+    const [lx, ly] = pt(i, R + 26);
+    const anchor = Math.abs(lx - cx) < 5 ? 'middle' : lx > cx ? 'start' : 'end';
+    g.push(`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="var(--dim)" font-size="11" text-anchor="${anchor}" dominant-baseline="middle" font-family="var(--mono)">${DOMAIN_SHORT[i]}</text>`);
+  }
+  g.push(`<text x="${cx}" y="${cy - R - 4}" fill="var(--dim)" font-size="9" text-anchor="middle" font-family="var(--mono)">100</text>`);
+  g.push(`<circle cx="${cx}" cy="${cy}" r="2" fill="var(--dim)"/>`);
+  // model polygons
+  for (const m of MODELS.filter((m) => selected.has(m.id))) {
+    const dv = domainVals(m);
+    const pts = dv.map((v, i) => pt(i, R * Math.max(0, Math.min(100, v)) / 100).map((n) => n.toFixed(1)).join(',')).join(' ');
+    const c = VENDOR_COLOR[m.vendor];
+    g.push(`<polygon points="${pts}" fill="${c}" fill-opacity="0.1" stroke="${c}" stroke-width="2"/>`);
+  }
+  $('#radar').innerHTML = g.join('');
+}
+
+function refresh() {
+  $('#modeNote').textContent = mode === 'relative' ? 'Showing each model centered on its own mean (50 = its average).' : '';
+  renderTable(); renderRadar();
+}
+$('#modeToggle').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+  mode = b.dataset.mode;
+  $('#modeToggle').querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+  refresh();
+}));
+
+renderBars(); renderPicker(); refresh();
+</script>
+</body>
+</html>

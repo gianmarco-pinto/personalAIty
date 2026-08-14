@@ -6,6 +6,8 @@
 
 🎛️ **[Try the live demo](https://personalaity.dev)** — tune the facets of a persona and watch it compile into a chat prompt and a social style guide in real time.
 
+🏆 **[The LLM Personality Leaderboard](https://personalaity.dev/leaderboard/)** — twelve frontier models measured with this toolkit: sycophancy ranking, HEXACO profiles, comparison radar. ([full report](REPORT.md))
+
 Every AI product reinvents personality as prose: a paragraph in a system prompt here, a "tone" field there, rewritten per platform, drifting with every model update. PersonalAIty replaces that with what design systems did for color: **personality as tokens** — one declarative, psychometrically grounded file, compiled per target.
 
 ```
