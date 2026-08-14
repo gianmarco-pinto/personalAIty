@@ -9,13 +9,18 @@ import { runEval, formatReport } from '../src/eval/index.js';
 const HELP = `personalaity v0.3
 
 Usage:
-  personalaity compile  <persona.yaml> [--target chat|social] [--lang en|it] [--out file]
+  personalaity compile  <persona.yaml> [--target chat|social] [--level full|style] [--lang en|it] [--out file]
   personalaity validate <persona.yaml>
-  personalaity eval     <persona.yaml> [--model <id>] [--responder anthropic|perfect] [--json]
+  personalaity eval     <persona.yaml> [--model <id>] [--level full|style] [--responder anthropic|perfect] [--json]
 
 Targets:
   chat    (default) system prompt for LLM chat/agents — L2 conformance
   social  content style guide for social media voice — L2 conformance (en only)
+
+Levels (chat target only):
+  full    (default) the complete persona — character, drives, dynamics, modulation
+  style   compact budget mode (~60% fewer tokens): the 8 most distinctive facets,
+          voice, always-on quirks and hard rules. Boundaries are never dropped.
 
 Eval:
   Administers the PI-50 inventory to the persona compiled as a chat prompt,
@@ -71,7 +76,11 @@ if (cmd === 'compile') {
     console.error(`✗ target '${target}' not implemented yet (available: ${Object.keys(compilers).join(', ')})`);
     process.exit(1);
   }
-  const out = compilers[target](persona, { lang: args.lang ?? 'en' });
+  if (args.level && target !== 'chat') {
+    console.error(`✗ --level applies to the chat target only`);
+    process.exit(1);
+  }
+  const out = compilers[target](persona, { lang: args.lang ?? 'en', level: args.level ?? 'full' });
   if (args.out) {
     writeFileSync(args.out, out);
     console.error(`✔ wrote ${args.out}`);
@@ -97,6 +106,7 @@ if (cmd === 'eval') {
       responder,
       model: args.model ?? 'claude-opus-4-8',
       apiKey: args.apiKey,
+      level: args.level ?? 'full',
     });
     if (args.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
     else process.stdout.write(formatReport(persona, report));

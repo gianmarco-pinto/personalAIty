@@ -20,11 +20,26 @@ const CHARACTER_FACETS = [
 const COMMUNICATE_FACETS = ['social_self_esteem', 'social_boldness', 'sociability', 'liveliness'];
 const VOICE_DIALS = ['formality', 'warmth_display', 'verbosity', 'directness', 'certainty_display'];
 
-export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
+export function compileChat(p, { lang = 'en', medium = 'chat', level = 'full' } = {}) {
   const L = LANGS[lang];
   if (!L) throw new Error(`unsupported lang '${lang}' (available: ${Object.keys(LANGS).join(', ')})`);
+  if (!['full', 'style'].includes(level)) throw new Error(`unsupported level '${level}' (available: full, style)`);
 
   const facets = flattenFacets(p.traits);
+  const styleMode = level === 'style';
+  // style level: keep only the N most distinctive facets (largest distance from
+  // the population mean), so the compact prompt spends its budget on what
+  // defines this persona rather than on everything that merely deviates.
+  let keep = null;
+  if (styleMode) {
+    keep = new Set(
+      Object.entries(facets)
+        .filter(([, v]) => typeof v === 'number')
+        .sort((a, b) => Math.abs(b[1] - 50) - Math.abs(a[1] - 50))
+        .slice(0, 8)
+        .map(([f]) => f),
+    );
+  }
   const sections = [];
   const push = (title, lines) => {
     const clean = lines.filter(Boolean);
@@ -36,12 +51,13 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
     const lines = [];
     const summary = p.identity?.summary?.trim();
     lines.push(summary ? `${L.youAre(p.name)} ${summary}` : L.youAre(p.name));
-    if (p.identity?.backstory) lines.push(L.background + p.identity.backstory.trim());
+    if (!styleMode && p.identity?.backstory) lines.push(L.background + p.identity.backstory.trim());
     push(L.headers.who, lines);
   }
 
   // CHARACTER
   push(L.headers.character, CHARACTER_FACETS.map((f) => {
+    if (styleMode && !keep.has(f)) return null;
     const line = bandedLine(L, L.facets, f, facets[f]);
     return line ? `- ${line}` : null;
   }));
@@ -55,6 +71,7 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
       if (line) lines.push(`- ${line}`);
     }
     for (const f of COMMUNICATE_FACETS) {
+      if (styleMode && !keep.has(f)) continue;
       const line = bandedLine(L, L.facets, f, facets[f]);
       if (line) lines.push(`- ${line}`);
     }
@@ -71,7 +88,7 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
   }
 
   // WHAT DRIVES YOU
-  {
+  if (!styleMode) {
     const lines = [];
     const entries = Object.entries(p.values ?? {}).filter(([, v]) => typeof v === 'number');
     const top = entries.filter(([, v]) => v >= 60).sort((a, b) => b[1] - a[1]).slice(0, 3);
@@ -84,7 +101,7 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
   }
 
   // EMOTIONAL DYNAMICS
-  {
+  if (!styleMode) {
     const lines = [];
     const a = p.affect ?? {};
     const bl = a.baseline ?? {};
@@ -108,10 +125,11 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
   // SIGNATURE BEHAVIORS
   push(L.headers.signature, (p.quirks ?? [])
     .filter((q) => scopeOk(q.scope, lang, medium))
+    .filter((q) => !styleMode || (q.frequency ?? 'sometimes') === 'always')
     .map((q) => `- [${L.freq[q.frequency ?? 'sometimes']}] ${q.text.trim()}`));
 
   // WHEN CONTEXT SHIFTS
-  push(L.headers.context, (p.context_modulation ?? []).map((c) => {
+  if (styleMode) { /* dropped at style level */ } else push(L.headers.context, (p.context_modulation ?? []).map((c) => {
     const what = renderAdjust(L, c.adjust ?? {});
     if (!what) return null;
     const label = c.description?.trim() || c.context.replace(/_/g, ' ');
@@ -126,8 +144,10 @@ export function compileChat(p, { lang = 'en', medium = 'chat' } = {}) {
     push(L.headers.rules, lines);
   }
 
-  const note = compilationNote(p, medium);
-  if (note) sections.push(note);
+  if (!styleMode) {
+    const note = compilationNote(p, medium);
+    if (note) sections.push(note);
+  }
 
   return sections.join('\n\n') + '\n';
 }

@@ -26,5 +26,5 @@ abstract: >-
   psychometric adherence eval (PI-50 inventory, declared-vs-measured
   profile, sycophancy index). Spec text and persona gallery are CC-BY-4.0;
   code is MIT.
-version: 0.3.1
+version: 0.3.2
 date-released: "2026-08-14"

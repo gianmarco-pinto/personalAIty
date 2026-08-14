@@ -68,6 +68,18 @@ The output is a system prompt (see [examples/](examples/)) — paste it into any
 
 No-tooling path: paste a persona YAML into any capable LLM with "embody this persona" — the structure does the heavy lifting.
 
+## Token budget
+
+A full-level gallery persona compiles to ~600–1,000 tokens — and the gallery is deliberately extreme, since average facets compile to silence; realistic personas run shorter. The prompt is static, which makes it an ideal prompt-caching candidate (cached reads bill at ~10% of input rates: roughly $0.0004 per request at Opus-class pricing).
+
+When the budget is tight — voice agents, small local models, crowded system prompts — compile at **style level**:
+
+```bash
+npx personalaity compile my-hero.persona.yaml --level style
+```
+
+`--level style` keeps the 8 most distinctive facets, the voice, always-on quirks and **every hard rule** (boundaries are never dropped), cutting roughly half the tokens (gallery: −46% to −58%). And because adherence is measurable, `personalaity eval --level style` tells you exactly how much personality each token buys — pick your point on the curve with numbers, not vibes.
+
 ## Anatomy of a persona
 
 ```yaml
@@ -114,7 +126,7 @@ boundaries:                # override everything, always
 
 - **v0.1** — ✅ spec draft, JSON Schema, six-persona gallery
 - **v0.2** — ✅ reference `chat` compiler (persona → system prompt, trait→marker mapping tables) · ✅ `social` compiler (persona → content style guide) · ⏳ `--translate` for freeform fields
-- **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ⏳ behavioral sycophancy battery (scenario probes + LLM judge), drift tracking across model versions, MCP server exposing `check_personality`
+- **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ⏳ behavioral sycophancy battery (scenario probes + LLM judge), drift tracking across model versions, MCP server exposing `check_personality`
 - **v0.4** — `voice` compiler (prosody parameters), `npc` compiler (behavior weights), runtime state reference implementation
 
 ## Scientific grounding

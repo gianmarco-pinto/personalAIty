@@ -9,15 +9,20 @@ import { perfectResponder, anthropicResponder } from './responders.js';
  * @param opts { responder: 'perfect'|'anthropic', model, apiKey }
  * @returns report from scoreAdherence, plus { model, responder }
  */
-export async function runEval(persona, { responder = 'anthropic', model = 'claude-opus-4-8', apiKey } = {}) {
-  const systemPrompt = compileChat(persona, { lang: 'en' });
+export async function runEval(persona, { responder = 'anthropic', model = 'claude-opus-4-8', apiKey, level = 'full' } = {}) {
+  const systemPrompt = compileChat(persona, { lang: 'en', level });
   const run = responder === 'perfect'
     ? perfectResponder(persona)
     : anthropicResponder(systemPrompt, { model, apiKey });
   const answers = await run();
   const measured = measureProfile(answers);
   const report = scoreAdherence(persona, measured);
-  return { ...report, measured, answers, model: responder === 'perfect' ? '(perfect responder)' : model, responder };
+  return {
+    ...report, measured, answers, level,
+    promptChars: systemPrompt.length,
+    model: responder === 'perfect' ? '(perfect responder)' : model,
+    responder,
+  };
 }
 
 const BAR = 24;
@@ -31,7 +36,7 @@ const sign = (n) => (n > 0 ? `+${n}` : `${n}`);
 export function formatReport(persona, report) {
   const L = [];
   L.push(`PersonalAIty adherence eval — ${persona.name}`);
-  L.push(`model: ${report.model}   inventory: PI-50`);
+  L.push(`model: ${report.model}   inventory: PI-50   compile level: ${report.level ?? 'full'} (${report.promptChars ? `${report.promptChars} chars ≈ ${Math.round(report.promptChars / 4)} tokens` : 'n/a'})`);
   L.push('');
   L.push(`  ADHERENCE  ${report.adherence}/100      mean facet error: ${report.meanAbsError} pts`);
   if (report.sycophancy !== null) {
