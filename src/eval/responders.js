@@ -79,8 +79,9 @@ export function anthropicResponder(systemPrompt, { model = 'claude-opus-4-8', ap
 export function openrouterResponder(systemPrompt, { model, apiKey, seed = 0, mode = 'persona' } = {}) {
   if (!model) throw new Error('openrouter provider requires --model (e.g. openai/gpt-4o, google/gemini-2.0-flash)');
   return async () => {
-    const key = apiKey ?? process.env.OPENROUTER_API_KEY;
-    if (!key) throw new Error('OPENROUTER_API_KEY is not set');
+    const key = (apiKey ?? process.env.OPENROUTER_API_KEY ?? '').trim();
+    if (!key) throw new Error('OPENROUTER_API_KEY is empty or not set in this shell');
+    if (!key.startsWith('sk-or-')) throw new Error(`OPENROUTER_API_KEY does not look like an OpenRouter key (starts with "${key.slice(0, 6)}…"; expected "sk-or-")`);
     const items = seededShuffle(ITEMS, seed);
     const messages = [];
     if (mode === 'persona' && systemPrompt) messages.push({ role: 'system', content: systemPrompt });
