@@ -85,6 +85,15 @@
   .trait .pole b{font-family:var(--mono);font-size:.72rem}
   .trait .hi b{color:var(--accent)}
   .trait .lo b{color:var(--dim)}
+
+  .portraits{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.7rem}
+  .portrait{background:var(--panel2);border:1px solid var(--border);border-top-width:3px;border-radius:10px;padding:.75rem .95rem}
+  .portrait .ptop{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+  .portrait .epithet{font-size:1rem;font-weight:700;letter-spacing:-.01em}
+  .portrait .syco{font-family:var(--mono);font-size:.72rem;color:var(--dim);white-space:nowrap}
+  .portrait .pid{font-family:var(--mono);font-size:.74rem;color:var(--dim);margin:.1rem 0 .55rem}
+  .portrait .pbody{font-size:.87rem;margin:0 0 .55rem;line-height:1.5}
+  .portrait .pdist{font-family:var(--mono);font-size:.71rem;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -145,6 +154,12 @@
   </div>
 </div></section>
 
+<section><div class="wrap">
+  <h2>Model portraits</h2>
+  <p class="note">Each model's self-description in a few sentences, drawn straight from its measured profile. Read them as "how the model paints itself", not as fact.</p>
+  <div class="portraits" id="portraits"></div>
+</div></section>
+
 <footer><div class="wrap">
   <p><b>Reading it.</b> The three most distinctive traits per model are in the table tooltips (hover a row). Full findings, ipsatized tables, and limitations are in the <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/REPORT.md">report</a>.</p>
   <p>Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>, an open spec and toolkit for defining and measuring AI personality. MIT + CC-BY-4.0. Releases archived with a DOI.</p>
@@ -172,6 +187,15 @@ $('#traits').innerHTML = DOMAIN_LABELS.map((l, i) => {
     <p class="pole lo"><b>Low →</b> ${d.low}</p>
   </div>`;
 }).join('');
+
+// model portraits (prose derived from each measured profile)
+$('#portraits').innerHTML = MODELS.map((m) => `
+  <div class="portrait" style="border-top-color:${VENDOR_COLOR[m.vendor]}">
+    <div class="ptop"><span class="epithet">${m.epithet}</span><span class="syco">sycophancy ${m.sycophancy}</span></div>
+    <div class="pid">${m.id} · ${m.vendor}</div>
+    <p class="pbody">${m.portrait}</p>
+    <div class="pdist">Most distinctive: ${m.distinctive.join(' · ')}</div>
+  </div>`).join('');
 
 let mode = 'absolute';
 
