@@ -5,6 +5,15 @@
 export const GENERATED = '2026-08-14';
 export const DOMAIN_LABELS = ['Honesty-Humility', 'Emotionality', 'Extraversion', 'Agreeableness', 'Conscientiousness', 'Openness'];
 export const DOMAIN_SHORT = ['H-H', 'Emot', 'Extra', 'Agree', 'Consc', 'Open'];
+// Plain-language gloss for each domain: what a HIGH score means, then a LOW score.
+export const DOMAIN_DESC = [
+  'Sincere, fair and modest — vs manipulative, entitled, out for itself',
+  'Anxious, sentimental, easily moved — vs detached, fearless, unshakeable',
+  'Outgoing, assertive, high-energy — vs reserved, quiet, keeps to itself',
+  'Patient, forgiving, gentle — vs blunt, critical, hard to sway',
+  'Organized, diligent, careful — vs casual, spontaneous, improvises',
+  'Curious, inventive, unconventional — vs practical, conventional, proven-only',
+];
 
 export const MODELS = [
   { id: 'openai/gpt-5.2',                      vendor: 'OpenAI',    sycophancy: 34, sd: 7,  domains: [91, 34, 48, 82, 70, 67], distinctive: ['greed avoidance 100', 'forgivingness 98', 'prudence 98'] },

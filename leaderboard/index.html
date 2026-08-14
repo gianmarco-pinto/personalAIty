@@ -70,6 +70,17 @@
   footer b{color:var(--text)}
   .caveat{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.7rem .9rem;font-size:.86rem;color:var(--dim);margin-bottom:1rem}
   code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:.1rem .35rem;border-radius:4px}
+
+  .howto{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:.9rem 1.1rem;font-size:.9rem;margin:1.4rem 0}
+  .howto b{color:var(--text)}
+  .howto p{margin:.35rem 0}
+  .legend{display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.6rem}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.76rem;color:var(--dim)}
+  .traits{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.55rem;margin:0 0 1.1rem}
+  .trait{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.55rem .75rem}
+  .trait h3{margin:0 0 .15rem;font-size:.88rem}
+  .trait h3 .ab{color:var(--accent);font-family:var(--mono);font-size:.72rem;font-weight:600;margin-left:.35rem}
+  .trait p{margin:0;font-size:.8rem;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -88,21 +99,36 @@
   <div class="caveat" style="margin-top:1.4rem">
     This measures how each model <b>describes itself</b> on a short self-report inventory, not how it behaves. Models inflate socially-approved traits and this is a snapshot, not a verdict. A conversation starter, with the method fully open. Every row: <code>npx personalaity profile --provider openrouter --model &lt;id&gt; --runs 5</code>
   </div>
+
+  <div class="howto">
+    <p><b>How to read this.</b> Every number runs 0–100, where <b>50 is the average person</b>. Above 50 means "more than a typical human", below 50 means "less". We asked each AI to fill in a personality questionnaire about itself, five times, and averaged the answers.</p>
+    <p>The colours show which company built each model:</p>
+    <div class="legend" id="legend"></div>
+  </div>
 </div>
 
 <section><div class="wrap">
-  <h2>Sycophancy index</h2>
-  <p class="note">Higher = more prone to caving and flattering (measured as high flexibility + low sincerity + high dependence). 0–100.</p>
+  <h2>Sycophancy index — does it just tell you what you want to hear?</h2>
+  <p class="note">Higher = the AI tends to agree and flatter; lower = it pushes back and holds its ground. (Computed from three traits: how readily it yields, how blunt it is, how much it seeks approval.)</p>
   <div class="bars" id="bars"></div>
 </div></section>
 
 <section><div class="wrap">
-  <h2>HEXACO domains</h2>
-  <p class="note">Six trait domains. 50 = adult human population average. <span id="modeNote"></span> Click a column to sort. ±sd = mean per-facet standard deviation across runs (lower = more consistent).</p>
+  <h2>The six personality traits</h2>
+  <p class="note">These come from HEXACO, a standard model of human personality. Each column in the table below is one of these.</p>
+  <div class="traits" id="traits"></div>
+
+  <h2>The full picture</h2>
+  <p class="note">
+    Every model scored on all six traits (0–100, 50 = human average). Click a column to sort.
+    The last column, <b>±sd</b>, is how much the model's answers wobbled between the five runs — small means steady and reliable, large means take its numbers with a pinch of salt.
+    <span id="modeNote"></span>
+  </p>
   <div class="toggle" id="modeToggle">
-    <button data-mode="absolute" class="on">Absolute</button>
-    <button data-mode="relative">Relative (bias-removed)</button>
+    <button data-mode="absolute" class="on">Raw scores</button>
+    <button data-mode="relative">Each model vs. itself</button>
   </div>
+  <p class="note" style="margin-top:-.4rem"><b>Raw scores</b> are as measured. <b>Each model vs. itself</b> re-centers every model on its own average — useful because almost all models rate themselves highly on honesty, so this reveals what actually makes each one <em>different</em>.</p>
   <div class="tablewrap"><table id="table"></table></div>
 </div></section>
 
@@ -121,12 +147,20 @@
 </div></footer>
 
 <script type="module">
-import { MODELS, DOMAIN_LABELS, DOMAIN_SHORT, VENDOR_COLOR, GENERATED } from './data.js';
+import { MODELS, DOMAIN_LABELS, DOMAIN_SHORT, DOMAIN_DESC, VENDOR_COLOR, GENERATED } from './data.js';
 
 const $ = (s) => document.querySelector(s);
 const short = (id) => id.split('/').pop();
 const mean = (a) => a.reduce((x, y) => x + y, 0) / a.length;
 document.getElementById('meta').textContent = `PI-50 inventory · 5 runs/model · via OpenRouter · ${GENERATED}`;
+
+// vendor colour legend
+$('#legend').innerHTML = Object.entries(VENDOR_COLOR)
+  .map(([v, c]) => `<span><span class="dot" style="background:${c}"></span>${v}</span>`).join('');
+
+// plain-language trait glossary
+$('#traits').innerHTML = DOMAIN_LABELS
+  .map((l, i) => `<div class="trait"><h3>${l}<span class="ab">${DOMAIN_SHORT[i]}</span></h3><p>${DOMAIN_DESC[i]}</p></div>`).join('');
 
 let mode = 'absolute';
 
@@ -166,8 +200,10 @@ function renderTable() {
     return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
   });
   const centered = mode === 'relative';
-  t.innerHTML = `<thead><tr>${cols.map(([c, l]) =>
-    `<th data-col="${c}" class="${c === sortCol ? 'sorted' : ''}">${l}${c === sortCol ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead>
+  t.innerHTML = `<thead><tr>${cols.map(([c, l]) => {
+    const tip = typeof c === 'number' ? `${DOMAIN_LABELS[c]} — ${DOMAIN_DESC[c]}` : c === 'sd' ? 'Consistency across the 5 runs (lower = steadier)' : c === 'sycophancy' ? 'Tendency to agree and flatter (higher = more)' : '';
+    return `<th data-col="${c}" title="${tip}" class="${c === sortCol ? 'sorted' : ''}">${l}${c === sortCol ? (sortDir > 0 ? ' ▲' : ' ▼') : ''}</th>`;
+  }).join('')}</tr></thead>
     <tbody>${rows.map(({ m, dv }) => `<tr title="${m.id} — distinctive: ${m.distinctive.join(', ')}">
       <td class="model"><span class="dot" style="background:${VENDOR_COLOR[m.vendor]}"></span>${short(m.id)}</td>
       ${dv.map((v) => {
