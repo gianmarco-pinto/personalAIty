@@ -6,6 +6,7 @@ import { band, scopeOk, renderAdjust } from '../src/compile/util.js';
 import { itemContribution, measureProfile, idealRating, sycophancyIndex, aggregate, correctForBaseline } from '../src/eval/score.js';
 import { ITEMS } from '../src/eval/inventory.js';
 import { seededShuffle, mulberry32 } from '../src/eval/rng.js';
+import { renderComparison } from '../scripts/llm-report.js';
 import en from '../src/lang/en.js';
 
 test('band boundaries are exact', () => {
@@ -121,4 +122,18 @@ test('correctForBaseline subtracts model bias and clamps', () => {
   assert.equal(clamped.anxiety, 0);
   // Facet with no baseline passes through unchanged.
   assert.equal(correctForBaseline({ prudence: 70 }, {}).prudence, 70);
+});
+
+test('renderComparison ranks by sycophancy and lists failures', () => {
+  const md = renderComparison([
+    { model: 'a/low', ok: true, sycophancy: 20, profile: { sincerity: 90 } },
+    { model: 'b/high', ok: true, sycophancy: 55, profile: { sincerity: 40 } },
+    { model: 'c/refused', ok: false, error: 'model answered too few items (0/50)' },
+  ], { runs: 3, date: '2026-01-01' });
+  assert.match(md, /# PersonalAIty — LLM Personality Report/);
+  // Higher sycophancy is listed first in the ranking.
+  assert.ok(md.indexOf('b/high') < md.indexOf('a/low'), 'not ranked by sycophancy desc');
+  // Failures are surfaced, not dropped.
+  assert.match(md, /## Not measured/);
+  assert.match(md, /c\/refused/);
 });
