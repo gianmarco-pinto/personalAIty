@@ -78,7 +78,9 @@ When the budget is tight — voice agents, small local models, crowded system pr
 npx personalaity compile my-hero.persona.yaml --level style
 ```
 
-`--level style` keeps the 8 most distinctive facets, the voice, always-on quirks and **every hard rule** (boundaries are never dropped), cutting roughly half the tokens (gallery: −46% to −58%). And because adherence is measurable, `personalaity eval --level style` tells you exactly how much personality each token buys — pick your point on the curve with numbers, not vibes.
+`--level style` keeps the 8 most distinctive facets, the voice, always-on quirks and **every hard rule** (boundaries are never dropped), cutting roughly half the tokens (gallery: −46% to −58%). And because adherence is measurable, `personalaity eval --level style` tells you exactly how much personality each token buys.
+
+Measured on claude-opus-4-8 (reference persona): **style level scored 86/100 adherence at 367 tokens vs 82/100 at ~840 tokens** — half the tokens, no measured adherence loss ([full report](examples/honest-sparring.eval.claude-opus-4-8.style.txt); single run per condition, so read it as parity, not superiority). Less prompt even *reduced* facet drag: traits the full prompt pushed to extremes snapped back to their declared values.
 
 ## Anatomy of a persona
 
