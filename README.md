@@ -4,7 +4,7 @@
 
 **An open specification for AI personality. Define it once, render it anywhere.**
 
-🎛️ **[Try the live demo](https://gianmarco-pinto.github.io/personalAIty/demo/)** — tune the facets of a persona and watch it compile into a chat prompt and a social style guide in real time.
+🎛️ **[Try the live demo](https://personalaity.dev)** — tune the facets of a persona and watch it compile into a chat prompt and a social style guide in real time.
 
 Every AI product reinvents personality as prose: a paragraph in a system prompt here, a "tone" field there, rewritten per platform, drifting with every model update. PersonalAIty replaces that with what design systems did for color: **personality as tokens** — one declarative, psychometrically grounded file, compiled per target.
 

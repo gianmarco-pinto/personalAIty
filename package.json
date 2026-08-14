@@ -26,7 +26,7 @@
   "author": "Gianmarco Pinto",
   "license": "MIT",
   "repository": { "type": "git", "url": "git+https://github.com/gianmarco-pinto/personalAIty.git" },
-  "homepage": "https://gianmarco-pinto.github.io/personalAIty/demo/",
+  "homepage": "https://personalaity.dev",
   "bugs": { "url": "https://github.com/gianmarco-pinto/personalAIty/issues" },
   "keywords": ["ai", "personality", "persona", "hexaco", "llm", "system-prompt", "character", "psychometrics", "open-standard", "sycophancy"]
 }
