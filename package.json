@@ -1,6 +1,6 @@
 {
   "name": "personalaity",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "An open specification for AI personality. Define it once, render it anywhere.",
   "type": "module",
   "bin": { "personalaity": "./bin/personalaity.js" },

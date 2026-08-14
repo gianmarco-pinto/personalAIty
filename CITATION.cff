@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use PersonalAIty in your work, please cite it as below."
+title: "PersonalAIty: an open specification for AI personality"
+type: software
+authors:
+  - family-names: Pinto
+    given-names: Gianmarco
+repository-code: "https://github.com/gianmarco-pinto/personalAIty"
+url: "https://gianmarco-pinto.github.io/personalAIty/demo/"
+license: MIT
+keywords:
+  - ai
+  - personality
+  - persona
+  - hexaco
+  - psychometrics
+  - llm
+  - system-prompt
+  - open-standard
+abstract: >-
+  An open, declarative format for defining the personality of an AI system
+  once — HEXACO-PI-R facets, Schwartz basic values, PAD emotional dynamics,
+  quirks, context modulation and hard boundaries — and rendering it
+  coherently across any embodiment: chatbots, voice agents, social content,
+  game NPCs. Ships with reference compilers (chat, social) and a
+  psychometric adherence eval (PI-50 inventory, declared-vs-measured
+  profile, sycophancy index). Spec text and persona gallery are CC-BY-4.0;
+  code is MIT.
+version: 0.3.1
+date-released: "2026-08-14"
