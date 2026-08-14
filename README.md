@@ -1,6 +1,6 @@
 # PersonalAIty
 
-[![DOI](https://zenodo.org/badge/1333260449.svg)](https://doi.org/10.5281/zenodo.21932468)
+[![npm](https://img.shields.io/npm/v/personalaity)](https://www.npmjs.com/package/personalaity) [![DOI](https://zenodo.org/badge/1333260449.svg)](https://doi.org/10.5281/zenodo.21932468)
 
 **An open specification for AI personality. Define it once, render it anywhere.**
 
@@ -40,15 +40,16 @@ Six personas ship with the spec. They are simultaneously examples, presets, and 
 ## Quick start
 
 1. Read the [spec](SPEC.md) (15 minutes).
-2. Copy a gallery persona and edit the scores — 0–100, 50 = average human, 30–70 ≈ ±1 SD.
-3. Compile it:
+2. Copy a [gallery persona](personas/) and edit the scores — 0–100, 50 = average human, 30–70 ≈ ±1 SD.
+3. Compile it (no install needed):
 
 ```bash
-npm install
-node bin/personalaity.js compile personas/honest-sparring.persona.yaml                  # → system prompt
-node bin/personalaity.js compile personas/honest-sparring.persona.yaml --target social  # → content style guide
-node bin/personalaity.js validate personas/honest-sparring.persona.yaml
+npx personalaity compile my-hero.persona.yaml                  # → system prompt
+npx personalaity compile my-hero.persona.yaml --target social  # → content style guide
+npx personalaity validate my-hero.persona.yaml
 ```
+
+Working from a clone instead? `npm install`, then `node bin/personalaity.js` with the same arguments.
 
 Same file, two media — that is the whole point. Compare [the chat prompt](examples/honest-sparring.chat.en.txt) with [the social voice guide](examples/honest-sparring.social.en.txt) compiled from the same persona.
 
@@ -56,8 +57,7 @@ Then **measure** whether the compiled persona actually expresses what the spec d
 
 ```bash
 export ANTHROPIC_API_KEY=...            # the model you deploy is the model you test
-npm install                             # pulls the optional Anthropic SDK
-node bin/personalaity.js eval personas/honest-sparring.persona.yaml --model claude-opus-4-8
+npx personalaity eval my-hero.persona.yaml --model claude-opus-4-8
 ```
 
 The eval administers a 50-item personality inventory to the compiled persona, scores the answers, and reports declared-vs-measured HEXACO plus a **sycophancy index** — see [an example report](examples/honest-sparring.eval.txt). No key? `--responder perfect` runs the scoring pipeline offline (it should score ~100).
