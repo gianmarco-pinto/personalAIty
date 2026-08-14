@@ -1,5 +1,7 @@
 # PersonalAIty
 
+[![DOI](https://zenodo.org/badge/1333260449.svg)](https://doi.org/10.5281/zenodo.21932468)
+
 **An open specification for AI personality. Define it once, render it anywhere.**
 
 🎛️ **[Try the live demo](https://gianmarco-pinto.github.io/personalAIty/demo/)** — tune the facets of a persona and watch it compile into a chat prompt and a social style guide in real time.
@@ -128,3 +130,5 @@ A persona file designs *artificial* characters. It is not for impersonating real
 **Draft-01.** The fastest way to improve the spec is to bring a character it cannot express — open an issue with the character description and where the format fails.
 
 License: spec text and gallery CC-BY-4.0; schema and future reference compilers MIT.
+
+Every release is archived on Zenodo with a DOI ([10.5281/zenodo.21932468](https://doi.org/10.5281/zenodo.21932468) resolves to the latest version). To cite PersonalAIty, use GitHub's "Cite this repository" button or the DOI directly.
