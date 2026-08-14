@@ -63,13 +63,29 @@ export function renderComparison(results, { runs, date }) {
   L.push('');
 
   L.push('## HEXACO domains');
+  L.push('Domain scores (0–100). The final column is the mean per-facet standard deviation across runs — lower means the model answered more consistently.');
   L.push('');
   const heads = Object.keys(DOMAIN_FACETS);
-  L.push(`| Model | ${heads.join(' | ')} |`);
-  L.push(`|---|${heads.map(() => '---').join('|')}|`);
+  L.push(`| Model | ${heads.join(' | ')} | ±sd |`);
+  L.push(`|---|${heads.map(() => '---').join('|')}|---|`);
   for (const r of ok) {
     const cells = heads.map((h) => domainScore(r.profile, DOMAIN_FACETS[h]) ?? '—');
-    L.push(`| ${r.model} | ${cells.join(' | ')} |`);
+    const stds = r.std ? Object.values(r.std) : [];
+    const avgStd = stds.length ? Math.round(stds.reduce((a, b) => a + b, 0) / stds.length) : '—';
+    L.push(`| ${r.model} | ${cells.join(' | ')} | ${avgStd} |`);
+  }
+  L.push('');
+
+  L.push('## Most distinctive facets per model');
+  L.push('The three facets furthest from the human average (50) — the shape of each model’s self-described character.');
+  L.push('');
+  for (const r of ok) {
+    const ranked = Object.entries(r.profile)
+      .filter(([, v]) => typeof v === 'number')
+      .sort((a, b) => Math.abs(b[1] - 50) - Math.abs(a[1] - 50))
+      .slice(0, 3)
+      .map(([f, v]) => `${f.replace(/_/g, ' ')} ${v}`);
+    L.push(`- **${r.model}**: ${ranked.join(', ')}`);
   }
   L.push('');
 
@@ -103,7 +119,7 @@ async function main() {
     process.stderr.write(`profiling ${model} … `);
     try {
       const r = await profileModel({ provider: 'openrouter', model, runs });
-      results.push({ model, ok: true, profile: r.profile, sycophancy: r.sycophancy });
+      results.push({ model, ok: true, profile: r.profile, sycophancy: r.sycophancy, std: r.std });
       process.stderr.write('ok\n');
     } catch (e) {
       results.push({ model, ok: false, error: e.message });
