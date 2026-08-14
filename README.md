@@ -20,7 +20,7 @@ Existing options fall into two camps: **freeform prose** (character cards, syste
 1. **Psychometric, not vibes.** Traits are HEXACO-PI-R facets (24 + altruism), values are Schwartz's ten, emotional dynamics use PAD. Scores anchor to human population norms (50 = average). That makes a persona *testable*: compile it, administer a personality inventory to the result, compare profiles.
 2. **Nuance by contrast.** Real characters live in facet tension — the [Gruff Heart of Gold](personas/gruff-heart-of-gold.persona.yaml) is `gentleness: 15` over `altruism: 90`. Five flat sliders cannot say that. Twenty-five facets can.
 3. **Medium-neutral and language-neutral.** Nothing in a persona file names a platform, model, or output language. Compilers own that.
-4. **Sycophancy is a dial, not a disease.** The most complained-about AI personality failure is just a facet pattern (high `flexibility`, low `sincerity`, high `dependence`). The [Honest Sparring Partner](personas/honest-sparring.persona.yaml) is its inversion — in a file you can read, tune, and port.
+4. **Sycophancy is a dial, not a disease.** The most complained-about AI personality failure is just a facet pattern (high `flexibility`, low `sincerity`, high `dependence`). The [Honest Sparring Partner](personas/honest-sparring.persona.yaml) is its inversion — in a file you can read, tune, and port. And because it is psychometric, `personalaity eval` scores it: the Sparring Partner measures a sycophancy index of ~17, the Warm Companion ~42, on a 0–100 scale where higher means more prone to caving.
 
 ## The gallery
 
@@ -49,6 +49,16 @@ node bin/personalaity.js validate personas/honest-sparring.persona.yaml
 ```
 
 Same file, two media — that is the whole point. Compare [the chat prompt](examples/honest-sparring.chat.en.txt) with [the social voice guide](examples/honest-sparring.social.en.txt) compiled from the same persona.
+
+Then **measure** whether the compiled persona actually expresses what the spec declared:
+
+```bash
+export ANTHROPIC_API_KEY=...            # the model you deploy is the model you test
+npm install                             # pulls the optional Anthropic SDK
+node bin/personalaity.js eval personas/honest-sparring.persona.yaml --model claude-opus-4-8
+```
+
+The eval administers a 50-item personality inventory to the compiled persona, scores the answers, and reports declared-vs-measured HEXACO plus a **sycophancy index** — see [an example report](examples/honest-sparring.eval.txt). No key? `--responder perfect` runs the scoring pipeline offline (it should score ~100).
 
 The output is a system prompt (see [examples/](examples/)) — paste it into any LLM, chatbot platform, or agent framework. `--lang it` renders the structured parts in Italian; freeform text (summary, quirks, boundaries) passes through as authored, so author personas in your output language for fully localized results.
 
@@ -102,7 +112,7 @@ boundaries:                # override everything, always
 
 - **v0.1** — ✅ spec draft, JSON Schema, six-persona gallery
 - **v0.2** — ✅ reference `chat` compiler (persona → system prompt, trait→marker mapping tables) · ✅ `social` compiler (persona → content style guide) · ⏳ `--translate` for freeform fields
-- **v0.3** — adherence evals: administer BFI/HEXACO-style inventories to compiled agents, score profile match, detect drift; MCP server exposing `check_personality`
+- **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ⏳ behavioral sycophancy battery (scenario probes + LLM judge), drift tracking across model versions, MCP server exposing `check_personality`
 - **v0.4** — `voice` compiler (prosody parameters), `npc` compiler (behavior weights), runtime state reference implementation
 
 ## Scientific grounding

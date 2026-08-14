@@ -4,16 +4,25 @@ import { writeFileSync } from 'node:fs';
 import { loadPersona } from '../src/load.js';
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
+import { runEval, formatReport } from '../src/eval/index.js';
 
-const HELP = `personalaity v0.2
+const HELP = `personalaity v0.3
 
 Usage:
-  personalaity compile <persona.yaml> [--target chat|social] [--lang en|it] [--out file]
+  personalaity compile  <persona.yaml> [--target chat|social] [--lang en|it] [--out file]
   personalaity validate <persona.yaml>
+  personalaity eval     <persona.yaml> [--model <id>] [--responder anthropic|perfect] [--json]
 
 Targets:
   chat    (default) system prompt for LLM chat/agents — L2 conformance
   social  content style guide for social media voice — L2 conformance (en only)
+
+Eval:
+  Administers the PI-50 inventory to the persona compiled as a chat prompt,
+  then reports declared-vs-measured HEXACO plus a sycophancy index.
+  --responder anthropic (default) runs a real model — needs ANTHROPIC_API_KEY
+  and \`npm install @anthropic-ai/sdk\`. --responder perfect validates the
+  scoring pipeline with no LLM (should score ~100).
 
 Notes:
   Structured fields are rendered in the requested --lang; freeform text
@@ -68,6 +77,32 @@ if (cmd === 'compile') {
     console.error(`✔ wrote ${args.out}`);
   } else {
     process.stdout.write(out);
+  }
+  process.exit(0);
+}
+
+if (cmd === 'eval') {
+  if (errors.length) {
+    console.error(`✗ ${file} failed validation:`);
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  const responder = args.responder ?? 'anthropic';
+  try {
+    if (responder === 'anthropic' && !process.env.ANTHROPIC_API_KEY && !args.apiKey) {
+      console.error('✗ ANTHROPIC_API_KEY is not set. Set it, or use --responder perfect to test the pipeline offline.');
+      process.exit(1);
+    }
+    const report = await runEval(persona, {
+      responder,
+      model: args.model ?? 'claude-opus-4-8',
+      apiKey: args.apiKey,
+    });
+    if (args.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+    else process.stdout.write(formatReport(persona, report));
+  } catch (e) {
+    console.error(`✗ eval failed: ${e.message}`);
+    process.exit(1);
   }
   process.exit(0);
 }

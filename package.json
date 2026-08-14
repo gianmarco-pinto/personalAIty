@@ -5,12 +5,15 @@
   "type": "module",
   "bin": { "personalaity": "./bin/personalaity.js" },
   "scripts": {
-    "test": "node test/smoke.js",
+    "test": "node test/smoke.js && node test/eval-smoke.js",
     "build:demo": "node scripts/build-demo-personas.js"
   },
   "engines": { "node": ">=18" },
   "dependencies": {
     "js-yaml": "^4.1.0"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
   },
   "license": "MIT",
   "keywords": ["ai", "personality", "persona", "hexaco", "llm", "system-prompt", "character"]
