@@ -12,6 +12,8 @@
 
 🔬 **[Does it actually work?](https://personalaity.dev/proof/)** — a dose-response experiment: sweep one trait, hold the rest, and measure whether the model's behavior follows. Two independent measurements agree that it does.
 
+🤖 **[For robots and androids](https://personalaity.dev/robot/)** — one persona file compiles to how an embodied agent acts (behavior weights), sounds (prosody), and speaks (dialogue), kept coherent across the whole stack.
+
 Every AI product reinvents personality as prose: a paragraph in a system prompt here, a "tone" field there, rewritten per platform, drifting with every model update. PersonalAIty replaces that with what design systems did for color: **personality as tokens** — one declarative, psychometrically grounded file, compiled per target.
 
 ```

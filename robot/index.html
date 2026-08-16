@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For robots · PersonalAIty</title>
+<meta name="description" content="A portable personality layer for embodied AI. One persona file compiles to how a robot acts, how it sounds, and what it says, coherent across the whole stack.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422;
+    --accent2:#3fb6c4; --accent2-soft:#3fb6c422;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f6; --panel:#fff; --panel2:#f4f2ec; --border:#e2ded3; --text:#22252b;
+      --dim:#6b7280; --accent:#c77d1a; --accent-soft:#c77d1a18;
+      --accent2:#1f8b99; --accent2-soft:#1f8b9914;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:900px;margin:0 auto;padding:0 1.2rem}
+
+  header{border-bottom:1px solid var(--border);padding:1.8rem 0 1.4rem}
+  h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .35rem;max-width:18ch}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--dim);font-size:1.05rem;margin:.2rem 0;max-width:60ch}
+  header nav{margin-top:.9rem;font-size:.9rem}
+  header nav a{margin-right:1.1rem}
+
+  section{padding:1.6rem 0;border-top:1px solid var(--border)}
+  h2{font-size:1.3rem;margin:0 0 .5rem}
+  h3{font-size:1.02rem;margin:1rem 0 .3rem}
+  p{margin:.55rem 0}
+  .lead{color:var(--dim);font-size:1rem;max-width:64ch}
+
+  .idea{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:.9rem 1.1rem;margin:1.1rem 0;font-size:1.02rem}
+  .idea b{color:var(--text)}
+
+  .ladder{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin:1rem 0 .3rem}
+  .ladder .node{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:.45rem .75rem;font-size:.88rem;white-space:nowrap}
+  .ladder .node.cap{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .ladder .arrow{color:var(--dim)}
+
+  .bots{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+  @media(max-width:680px){ .bots{grid-template-columns:1fr} }
+  .bot{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+  .bot h4{margin:0 0 .05rem;font-size:1.05rem}
+  .bot .role{color:var(--dim);font-size:.82rem;margin:0 0 .7rem}
+  .bot .grp{font-family:var(--mono);font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.04em;margin:.6rem 0 .25rem}
+  .dial{display:flex;align-items:center;gap:.5rem;font-size:.83rem;margin:.18rem 0}
+  .dial .k{flex:1;color:var(--text)}
+  .dial .v{font-family:var(--mono);font-weight:700;min-width:2.1rem;text-align:right}
+  .dial .lab{color:var(--dim);font-size:.78rem;min-width:5.4rem}
+  .bar{height:5px;border-radius:3px;background:var(--border);flex:0 0 70px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .take{margin:.7rem 0 0;font-size:.86rem;color:var(--dim);border-top:1px solid var(--border);padding-top:.5rem}
+  .contrast{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.7rem .95rem;font-size:.92rem;margin:.4rem 0}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem;margin:.6rem 0}
+  th,td{padding:.5rem .55rem;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:.8rem}
+  td code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:.05rem .3rem;border-radius:4px}
+
+  .who{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin:.8rem 0}
+  @media(max-width:680px){ .who{grid-template-columns:1fr} }
+  .who .w{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;font-size:.88rem}
+  .who .w b{color:var(--text)}
+
+  .frontier-note{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.75rem .95rem;font-size:.9rem;color:var(--dim);margin-top:.6rem}
+  .frontier-note b{color:var(--text)}
+  pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem}
+  .cta{display:inline-block;margin:.4rem .5rem .2rem 0;background:var(--accent);color:#141414;font-weight:700;padding:.55rem 1rem;border-radius:8px;font-size:.92rem}
+  .cta:hover{text-decoration:none;opacity:.92}
+  .cta.ghost{background:none;border:1px solid var(--border);color:var(--text)}
+  footer{padding:1.6rem 0 2.6rem;color:var(--dim);font-size:.86rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>A personality layer for <em>embodied AI</em></h1>
+  <p class="sub">Robots and androids are shipping. Each one needs a character that stays coherent across its behavior, its voice, and its words. Define it once, in a file, and compile it to the whole stack.</p>
+  <nav>
+    <a href="/">Builder</a>
+    <a href="/start/">Get started</a>
+    <a href="/proof/">Proof</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="idea"><b>The problem embodiment creates:</b> a physical agent's personality lives in three separate subsystems, its behavior policy, its text-to-speech, and its language model. Wire them by hand and they drift: a robot that speaks warmly but acts coldly, or reads friendly and sounds like a kiosk. The character has to be <b>one thing</b>, authored once.</div>
+</div>
+
+<section><div class="wrap">
+  <h2>One persona, three faces, kept in sync</h2>
+  <p class="lead">A robot is the far end of the same spectrum every conversational AI lives on. What changes is how much of it is physical.</p>
+  <div class="ladder">
+    <span class="node">💬 Chatbot</span>
+    <span class="arrow">→</span>
+    <span class="node">🔊 Voicebot</span>
+    <span class="arrow">→</span>
+    <span class="node">🎮 Game NPC</span>
+    <span class="arrow">→</span>
+    <span class="node cap">🤖 Robot / Android</span>
+  </div>
+  <p>A physical agent has three faces, and they must be one character. The <code>robot</code> target compiles all three from a single persona file:</p>
+  <table>
+    <thead><tr><th>The persona compiles to…</th><th>which feeds…</th><th>so the robot…</th></tr></thead>
+    <tbody>
+      <tr><td><b>Behavior weights</b> (0–100)</td><td>your behavior policy, behavior tree, or action selection</td><td>acts in character: how helpful, bold, patient, dominant it is</td></tr>
+      <tr><td><b>Prosody parameters</b> (0–100)</td><td>your text-to-speech (SSML, ElevenLabs, Cartesia…)</td><td>sounds in character: pace, pitch, warmth, hesitation</td></tr>
+      <tr><td><b>Dialogue prompt</b></td><td>the language model behind it</td><td>speaks and reasons in character</td></tr>
+      <tr><td><b>Hard rules</b> (boundaries)</td><td>your safety layer</td><td>never crosses its lines, whatever the character</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Same compiler, two very different machines</h2>
+  <p class="lead">Both robots below came from one persona file each, with no per-subsystem hand-tuning. Real output from the <code>robot</code> compiler:</p>
+  <div class="bots">
+    <div class="bot">
+      <h4>Companion robot</h4>
+      <p class="role">home / eldercare, always-on presence</p>
+      <div class="grp">How it acts</div>
+      <div class="dial"><span class="k">helpfulness</span><span class="bar"><i style="width:93%"></i></span><span class="v">93</span></div>
+      <div class="dial"><span class="k">hostility</span><span class="bar"><i style="width:35%"></i></span><span class="v">35</span></div>
+      <div class="dial"><span class="k">grudge</span><span class="bar"><i style="width:15%"></i></span><span class="v">15</span></div>
+      <div class="dial"><span class="k">dominance seeking</span><span class="bar"><i style="width:25%"></i></span><span class="v">25</span></div>
+      <div class="grp">How it sounds</div>
+      <div class="dial"><span class="k">warmth</span><span class="lab">warm</span><span class="v">90</span></div>
+      <div class="dial"><span class="k">pitch variation</span><span class="lab">expressive</span><span class="v">70</span></div>
+      <div class="dial"><span class="k">hesitation</span><span class="lab">occasional</span><span class="v">45</span></div>
+      <p class="take">Warm, forgiving, unhurried, expressive. It leads with help and never holds a grudge.</p>
+    </div>
+    <div class="bot">
+      <h4>Service android</h4>
+      <p class="role">reception / concierge, front-of-house</p>
+      <div class="grp">How it acts</div>
+      <div class="dial"><span class="k">honesty</span><span class="bar"><i style="width:75%"></i></span><span class="v">75</span></div>
+      <div class="dial"><span class="k">bravery</span><span class="bar"><i style="width:80%"></i></span><span class="v">80</span></div>
+      <div class="dial"><span class="k">helpfulness</span><span class="bar"><i style="width:60%"></i></span><span class="v">60</span></div>
+      <div class="dial"><span class="k">grudge</span><span class="bar"><i style="width:30%"></i></span><span class="v">30</span></div>
+      <div class="grp">How it sounds</div>
+      <div class="dial"><span class="k">warmth</span><span class="lab">neutral</span><span class="v">55</span></div>
+      <div class="dial"><span class="k">pitch variation</span><span class="lab">flat, even</span><span class="v">35</span></div>
+      <div class="dial"><span class="k">hesitation</span><span class="lab">fluent</span><span class="v">25</span></div>
+      <p class="take">Composed, even, unflappable. A steady front-desk presence that does not overshare or ruffle.</p>
+    </div>
+  </div>
+  <div class="contrast">One is warm and expressive; the other composed and even. Neither was tuned subsystem by subsystem. Each is <b>one persona file</b>, and its behavior, voice, and words agree by construction.</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Why a psychometric layer, not a config file</h2>
+  <p>Trait scores here are not arbitrary knobs. They are HEXACO facets anchored to human population norms, which makes a persona <b>testable</b>: compile it, measure the result, and check that behavior tracks the spec. We ran that experiment. Turn one trait dial, hold the rest, and the measured behavior follows. <a href="/proof/">See the proof</a>.</p>
+  <p>That buys the embodied industry three things a hand-written config cannot: <b>portability</b> (swap the TTS or the language model, recompile, keep the character), <b>coherence</b> (one source for all three faces), and <b>evidence</b> (adherence you can measure, not vibes you hope for).</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Who this is for</h2>
+  <div class="who">
+    <div class="w"><b>Humanoid &amp; android makers:</b> a consistent character across the whole platform, not a personality bolted onto a voice.</div>
+    <div class="w"><b>Service &amp; hospitality robots:</b> reception, retail, and concierge units that need a brand-consistent, safe demeanor.</div>
+    <div class="w"><b>Companion &amp; care robots:</b> a warm, stable presence whose behavior and voice never contradict each other.</div>
+    <div class="w"><b>Robotics research labs:</b> a declarative, measurable personality spec to hold constant or vary across studies.</div>
+  </div>
+  <div class="frontier-note"><b>Where this is today, honestly:</b> the behavior-weights, prosody, and dialogue outputs are usable now, one persona file to one build sheet. What is <em>not</em> shipped yet is the live runtime, a mood that shifts and recovers in real time as the robot interacts. Its emotional dynamics are already declared in the spec; the runtime that drives them moment to moment is the next build. If you are building embodied AI and want that layer, that is exactly the collaboration to have.</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Try it</h2>
+  <p class="lead">Tune a character on the sliders and read its robot build sheet live, or compile one from the command line.</p>
+  <p>
+    <a class="cta" href="/#robot">Open the builder → Robot tab</a>
+    <a class="cta ghost" href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+  </p>
+  <pre>npx personalaity compile warm-companion --target robot</pre>
+  <p style="font-size:.9rem;color:var(--dim)">Building an embodied product and want to talk? Open an issue on <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>. The spec grows fastest from characters it cannot yet express.</p>
+</div></section>
+
+<footer><div class="wrap">
+  Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>, an open spec and toolkit for defining and measuring AI personality. The robot compiler is <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/src/compile/robot.js">robot.js</a>. MIT + CC-BY-4.0.
+</div></footer>
+</body>
+</html>
