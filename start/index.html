@@ -47,6 +47,17 @@
   .cta{display:inline-block;margin-top:.3rem;background:var(--accent);color:#0e1014;font-weight:700;padding:.5rem .95rem;border-radius:8px;font-size:.9rem}
   .cta:hover{text-decoration:none;opacity:.92}
 
+  .lead{color:var(--dim);font-size:.95rem;margin:.1rem 0 1rem;max-width:64ch}
+  .uses{display:flex;flex-direction:column;gap:.7rem}
+  .rung{display:flex;gap:.9rem;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:.95rem 1.1rem}
+  .rung .num{flex:none;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.9rem;color:#141414;background:var(--accent)}
+  .rung .body{flex:1;min-width:0}
+  .rung h4{margin:.05rem 0 .25rem;font-size:1.03rem}
+  .rung .body>p{margin:0 0 .5rem;font-size:.9rem;color:var(--text)}
+  .rung .foot{font-size:.85rem;color:var(--dim);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .rung .foot a{margin-left:auto;font-weight:600;white-space:nowrap}
+  .chip{font-family:var(--mono);font-size:.72rem;background:var(--accent-soft);color:var(--accent);border:1px solid var(--border);padding:.1rem .45rem;border-radius:5px}
+
   section{padding:1.4rem 0;border-top:1px solid var(--border)}
   h3{font-size:1.1rem;margin:0 0 .6rem}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
@@ -73,7 +84,54 @@
 
 <div class="wrap">
   <div class="idea"><b>The whole idea in one line:</b> describe the personality → compile it into a prompt → paste it into your bot → (optionally) measure that the bot actually behaves that way.</div>
+</div>
 
+<section id="uses"><div class="wrap">
+  <h3>What you can build</h3>
+  <p class="lead">From the simplest to the most advanced. It is always the <b>same persona file</b>; you just compile it to a different target. Every rung below opens the live builder on the matching tab.</p>
+  <div class="uses">
+
+    <div class="rung">
+      <div class="num">1</div>
+      <div class="body">
+        <h4>Set the tone of your chatbot</h4>
+        <p>"I want my assistant to stop agreeing with everything, sound warmer, get to the point." Tune the traits, get a system prompt, paste it in.</p>
+        <div class="foot"><span class="chip">chat</span> a system prompt <a href="/#chat">Open the Chat tab →</a></div>
+      </div>
+    </div>
+
+    <div class="rung">
+      <div class="num">2</div>
+      <div class="body">
+        <h4>Keep one brand voice across content</h4>
+        <p>"Every post, email and reply should sound like the same person." Get a content style guide your team, or your AI writer, can follow.</p>
+        <div class="foot"><span class="chip">social</span> a content style guide <a href="/#social">Open the Social tab →</a></div>
+      </div>
+    </div>
+
+    <div class="rung">
+      <div class="num">3</div>
+      <div class="body">
+        <h4>Give a voicebot a personality you can hear</h4>
+        <p>"My voice agent reads the words fine but sounds robotic." Get the prompt <em>and</em> prosody dials, pace, pitch, warmth, pauses, to map onto your TTS engine.</p>
+        <div class="foot"><span class="chip">voice</span> prompt + prosody params <a href="/#voice">Open the Voice tab →</a></div>
+      </div>
+    </div>
+
+    <div class="rung">
+      <div class="num">4</div>
+      <div class="body">
+        <h4>Put a character inside a game or an agent</h4>
+        <p>"My NPC should grumble while it helps you, not read like a chatbot." Get behavior weights (helpfulness 88 <em>and</em> hostility 85 at once) plus a dialogue profile.</p>
+        <div class="foot"><span class="chip">npc</span> behavior weights + dialogue <a href="/#npc">Open the Game NPC tab →</a></div>
+      </div>
+    </div>
+
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <h3>Two ways to set it up</h3>
   <div class="paths">
     <div class="path">
       <h2>🎛️ No code</h2>
@@ -102,7 +160,7 @@
       <a class="cta" href="https://github.com/gianmarco-pinto/personalAIty/blob/main/GUIDE.md">Full guide →</a>
     </div>
   </div>
-</div>
+</div></section>
 
 <section><div class="wrap">
   <h3>Where to paste the prompt</h3>

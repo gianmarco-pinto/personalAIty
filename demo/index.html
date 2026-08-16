@@ -96,6 +96,8 @@
     <div class="tabs">
       <button data-tab="chat" class="on">Chat prompt</button>
       <button data-tab="social">Social guide</button>
+      <button data-tab="voice">Voice + prosody</button>
+      <button data-tab="npc">Game NPC</button>
       <button data-tab="spec">Spec (JSON)</button>
       <span class="spacer"></span>
       <button class="act" id="copy">Copy</button>
@@ -117,6 +119,8 @@
 <script type="module">
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
+import { compileVoice } from '../src/compile/voice.js';
+import { compileNpc } from '../src/compile/npc.js';
 import { band } from '../src/compile/util.js';
 import { PERSONAS } from './personas.js';
 
@@ -207,6 +211,8 @@ function buildControls() {
 function currentOutput() {
   if (tab === 'chat') return compileChat(state, { lang: 'en' });
   if (tab === 'social') return compileSocial(state, { lang: 'en' });
+  if (tab === 'voice') return compileVoice(state, { lang: 'en' });
+  if (tab === 'npc') return compileNpc(state, { lang: 'en' });
   return JSON.stringify(state, null, 2);
 }
 
@@ -239,12 +245,18 @@ PERSONAS.forEach((p, i) => {
   $('#presets').appendChild(b);
 });
 
-// tabs
+// tabs (deep-linkable: /#voice, /#npc, …)
+const TABS = ['chat', 'social', 'voice', 'npc', 'spec'];
+function activateTab(name) {
+  if (!TABS.includes(name)) return;
+  tab = name;
+  document.querySelectorAll('.tabs [data-tab]').forEach((x) => x.classList.toggle('on', x.dataset.tab === name));
+  refresh();
+}
 document.querySelectorAll('.tabs [data-tab]').forEach((b) => {
   b.addEventListener('click', () => {
-    tab = b.dataset.tab;
-    document.querySelectorAll('.tabs [data-tab]').forEach((x) => x.classList.toggle('on', x === b));
-    refresh();
+    activateTab(b.dataset.tab);
+    history.replaceState(null, '', '#' + b.dataset.tab);
   });
 });
 
@@ -265,6 +277,10 @@ $('#download').addEventListener('click', () => {
 });
 
 selectPersona(0);
+{
+  const initial = location.hash.replace('#', '');
+  if (TABS.includes(initial)) activateTab(initial);
+}
 </script>
 </body>
 </html>
