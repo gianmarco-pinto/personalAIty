@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Get started — PersonalAIty</title>
+<meta name="description" content="Give your chatbot a specific personality in five minutes. A no-code path with sliders, and a developer path with the CLI.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f6; --panel:#fff; --panel2:#f4f2ec; --border:#e2ded3; --text:#22252b;
+      --dim:#6b7280; --accent:#c77d1a; --accent-soft:#c77d1a18;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 1.2rem}
+
+  header{border-bottom:1px solid var(--border);padding:1.8rem 0 1.4rem}
+  h1{font-size:1.9rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .35rem}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--dim);font-size:1.02rem;margin:.2rem 0}
+  header nav{margin-top:.8rem;font-size:.9rem}
+  header nav a{margin-right:1.1rem}
+
+  .idea{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:.85rem 1.1rem;margin:1.5rem 0;font-size:1rem}
+  .idea b{color:var(--text)}
+
+  .paths{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.2rem 0}
+  @media (max-width:720px){ .paths{grid-template-columns:1fr} }
+  .path{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.2rem}
+  .path.dev{border-top:3px solid var(--accent)}
+  .path h2{margin:.1rem 0 .2rem;font-size:1.15rem}
+  .path .who{color:var(--dim);font-size:.85rem;margin:0 0 .9rem}
+  ol{margin:0;padding-left:1.2rem}
+  ol li{margin:.5rem 0;font-size:.92rem}
+  ol li b{color:var(--text)}
+  code{font-family:var(--mono);font-size:.85em;background:var(--panel2);padding:.12rem .4rem;border-radius:4px}
+  pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.7rem .85rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem;margin:.5rem 0}
+  .cta{display:inline-block;margin-top:.3rem;background:var(--accent);color:#0e1014;font-weight:700;padding:.5rem .95rem;border-radius:8px;font-size:.9rem}
+  .cta:hover{text-decoration:none;opacity:.92}
+
+  section{padding:1.4rem 0;border-top:1px solid var(--border)}
+  h3{font-size:1.1rem;margin:0 0 .6rem}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:.5rem .5rem;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--dim);font-weight:600;font-size:.82rem}
+  .tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.6rem}
+  .tip{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.65rem .8rem}
+  .tip b{display:block;margin-bottom:.15rem}
+  .tip p{margin:0;font-size:.85rem;color:var(--dim)}
+  footer{padding:1.6rem 0 2.4rem;color:var(--dim);font-size:.86rem}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Give your AI a <em>personality</em></h1>
+  <p class="sub">Describe a character once. Turn it into a prompt you paste into your chatbot. Five minutes, no experience needed.</p>
+  <nav>
+    <a href="/">Builder</a>
+    <a href="/leaderboard/">Leaderboard</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/SPEC.md">Spec</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="idea"><b>The whole idea in one line:</b> describe the personality → compile it into a prompt → paste it into your bot → (optionally) measure that the bot actually behaves that way.</div>
+
+  <div class="paths">
+    <div class="path">
+      <h2>🎛️ No code</h2>
+      <p class="who">5 minutes · no terminal, no files</p>
+      <ol>
+        <li><b>Open the builder</b> and pick a starting character, or move the sliders. Each slider is a trait on a 0–100 scale, where <b>50 is an average person</b>. Warmer? Raise <em>Warmth</em>. Should stop agreeing with everything? Keep <em>Sincerity</em> high, <em>Flexibility</em> low.</li>
+        <li><b>Copy the prompt</b> — the page compiles it live as you edit. Click <em>Copy</em>.</li>
+        <li><b>Paste it into your bot</b> (see the table below). Done.</li>
+      </ol>
+      <a class="cta" href="/">Open the builder →</a>
+    </div>
+    <div class="path dev">
+      <h2>⌨️ Developer</h2>
+      <p class="who">Node 18+ · nothing to install (npx fetches it)</p>
+      <ol>
+        <li><b>Start from a built-in character</b> or write a small <code>.persona.yaml</code>:
+          <pre>npx personalaity compile honest-sparring</pre></li>
+        <li><b>Compile your own file</b> into a system prompt:
+          <pre>npx personalaity compile my-bot.persona.yaml</pre>
+          Also: <code>--target social|voice|npc</code>, <code>--lang it</code>, <code>--level style</code>.</li>
+        <li><b>Paste or wire the prompt in</b> (table below).</li>
+        <li><b>Measure it worked</b> (needs an API key):
+          <pre>npx personalaity eval my-bot.persona.yaml \
+  --provider openrouter --model openai/gpt-4o</pre></li>
+      </ol>
+      <a class="cta" href="https://github.com/gianmarco-pinto/personalAIty/blob/main/GUIDE.md">Full guide →</a>
+    </div>
+  </div>
+</div>
+
+<section><div class="wrap">
+  <h3>Where to paste the prompt</h3>
+  <p style="color:var(--dim);font-size:.9rem;margin:.1rem 0 .8rem">The compiled prompt goes wherever your bot reads its system instructions.</p>
+  <table>
+    <thead><tr><th>If your bot is…</th><th>Paste the prompt into…</th></tr></thead>
+    <tbody>
+      <tr><td>A custom app on the OpenAI or Claude API</td><td>the <code>system</code> parameter of the request</td></tr>
+      <tr><td>OpenAI Assistants / a custom GPT</td><td>the <b>Instructions</b> field</td></tr>
+      <tr><td>Claude Projects</td><td>the project's <b>Custom instructions</b></td></tr>
+      <tr><td>Voiceflow / Botpress / other no-code</td><td>the agent's <b>prompt</b> or <b>persona</b> field</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section><div class="wrap">
+  <h3>Three things worth knowing</h3>
+  <div class="tips">
+    <div class="tip"><b>Think in traits, not prose</b><p>You tune sincerity, warmth, patience — not a hand-written paragraph. Numbers anchor to real people (50 = average), so you always know what you're asking for.</p></div>
+    <div class="tip"><b>Boundaries always win</b><p>Hard rules override every trait. A blunt persona still can't be cruel if a boundary forbids it.</p></div>
+    <div class="tip"><b>Portable across models</b><p>Switched from GPT to Claude, or a model update broke your tone? Don't rewrite the prompt — recompile the same persona file.</p></div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>, an open spec and toolkit for defining and measuring AI personality. MIT + CC-BY-4.0.
+</div></footer>
+</body>
+</html>

@@ -4,6 +4,8 @@
 
 **An open specification for AI personality. Define it once, render it anywhere.**
 
+🚀 **New here? [Get started in 5 minutes](https://personalaity.dev/start/)** — a no-code path (sliders) and a developer path (CLI). Or read the [step-by-step guide](GUIDE.md).
+
 🎛️ **[Try the live demo](https://personalaity.dev)** — tune the facets of a persona and watch it compile into a chat prompt and a social style guide in real time.
 
 🏆 **[The LLM Personality Leaderboard](https://personalaity.dev/leaderboard/)** — twelve frontier models measured with this toolkit: sycophancy ranking, HEXACO profiles, comparison radar. ([full report](REPORT.md))

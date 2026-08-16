@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // PersonalAIty CLI — compile persona specs, eval adherence, profile models.
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadPersona } from '../src/load.js';
 import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
@@ -123,12 +125,23 @@ if (cmd === 'battery') {
   process.exit(0);
 }
 
-// ── all other commands take a persona file ──────────────────────────────────
+// ── all other commands take a persona file (path or a built-in gallery id) ───
 if (!file) {
   console.log(HELP);
   process.exit(1);
 }
-const { persona, errors } = loadPersona(file);
+const pkgRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+function resolvePersona(arg) {
+  if (existsSync(arg)) return arg;
+  const gallery = join(pkgRoot, 'personas', `${arg}.persona.yaml`);
+  return existsSync(gallery) ? gallery : null;
+}
+const resolved = resolvePersona(file);
+if (!resolved) {
+  console.error(`✗ '${file}' is not a file, and not a built-in persona id. Built-in ids: honest-sparring, warm-companion, brilliant-cynic, demanding-coach, impeccable-professional, gruff-heart-of-gold.`);
+  process.exit(1);
+}
+const { persona, errors } = loadPersona(resolved);
 
 if (cmd === 'validate') {
   if (errors.length) {
