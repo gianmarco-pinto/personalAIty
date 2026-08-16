@@ -9,20 +9,21 @@ import { writeFileSync } from 'node:fs';
 import { profileModel } from '../src/eval/index.js';
 
 // A cross-vendor set of widely-used general-chat flagships (OpenRouter IDs as of
-// 2026-08). Override with --models; refresh these as model IDs churn.
+// 2026-08-15). Override with --models; refresh these as model IDs churn.
+// gpt-4o is kept deliberately as a still-widely-deployed legacy anchor (the 2025
+// sycophancy-rollback protagonist). GLM-5.3 (Zhipu), MiniMax M3 and current
+// Mistral Large are omitted: not available through OpenRouter at time of writing.
 const DEFAULT_MODELS = [
-  'openai/gpt-5.2',
+  'openai/gpt-5.6-sol-20260709',
   'openai/gpt-4o',
-  'openai/gpt-5-mini',
   'anthropic/claude-opus-5',
   'anthropic/claude-sonnet-5',
-  'anthropic/claude-haiku-4.5',
   'google/gemini-3.7-flash',
-  'google/gemini-2.5-pro',
   'x-ai/grok-4.6',
-  'meta-llama/llama-3.3-70b-instruct',
-  'deepseek/deepseek-v3.2',
-  'mistralai/mistral-large-2512',
+  'deepseek/deepseek-v4-pro-20260813',
+  'moonshotai/kimi-k3-20260715',
+  'qwen/qwen3.8-max-20260803',
+  'meta/muse-spark-1.2-20260805',
 ];
 
 const DOMAIN_FACETS = {

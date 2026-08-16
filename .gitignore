@@ -4,3 +4,6 @@ package-lock.json
 
 # generated LLM reports (work products, not source)
 llm-report*.md
+
+# press drafts — kept private (pitching to outlets; not for public repo)
+press/
