@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
-import { resolveFacet, setFacet, spearman, slope, doseResponse, verdict } from '../src/eval/dose.js';
+import { resolveFacet, setFacet, spearman, slope, doseResponse, verdict, neutralBase } from '../src/eval/dose.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const persona = yaml.load(readFileSync(join(root, 'personas', 'honest-sparring.persona.yaml'), 'utf8'));
@@ -40,6 +40,29 @@ test('spearman is +1 for monotonic increasing, -1 for decreasing', () => {
 
 test('slope recovers the gain of a linear relation', () => {
   assert.equal(slope([0, 50, 100], [0, 25, 50]), 0.5);
+});
+
+test('neutralBase sets every facet to 50 and strips quirks/boundaries', () => {
+  const nb = neutralBase(persona);
+  assert.equal(nb.traits.altruism, 50);
+  assert.equal(nb.traits.agreeableness.facets.flexibility, 50);
+  assert.equal(nb.traits.honesty_humility.facets.sincerity, 50);
+  assert.equal(nb.quirks, undefined);
+  assert.equal(nb.boundaries, undefined);
+  assert.equal(nb.name, persona.name); // identity carried for labelling
+});
+
+test('doseResponse --isolate sweeps on a neutral base (clean diagonal, perfect responder)', async () => {
+  const result = await doseResponse(persona, {
+    facet: 'agreeableness.flexibility',
+    levels: [15, 45, 75, 90],
+    isolate: true,
+    provider: 'perfect',
+  });
+  assert.equal(result.isolate, true);
+  assert.ok(result.spearman >= 0.9);
+  // on a neutral base the perfect responder returns the swept level itself
+  assert.ok(Math.abs(result.points.at(-1).measured - 90) <= 15);
 });
 
 test('doseResponse over the perfect responder is monotonic with slope ~1', async () => {

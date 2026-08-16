@@ -13,6 +13,22 @@ import { FACETS } from '../facets.js';
 
 const clonePersona = (p) => JSON.parse(JSON.stringify(p));
 
+/** A blank-slate persona: every HEXACO facet at 50, no quirks/boundaries/voice.
+ *  Used by --isolate so the swept facet is the ONLY non-neutral signal in the
+ *  prompt — the dial's raw transfer function, with no gestalt fighting it. */
+export function neutralBase(persona = {}) {
+  const traits = { altruism: 50 };
+  for (const [dom, facets] of Object.entries(FACETS)) {
+    traits[dom] = { facets: Object.fromEntries(facets.map((f) => [f, 50])) };
+  }
+  return {
+    persona_spec: persona.persona_spec ?? '0.1',
+    id: persona.id ?? 'neutral',
+    name: persona.name ?? 'Neutral baseline',
+    traits,
+  };
+}
+
 /** Parse "domain.facet" (or the interstitial "altruism") against the HEXACO map. */
 export function resolveFacet(spec) {
   if (spec === 'altruism') return { domain: 'altruism', facet: 'altruism' };
@@ -96,11 +112,12 @@ const round2 = (v) => (v === null ? null : Math.round(v * 100) / 100);
  * @param opts { facet, levels, ...runEvalOpts (provider|responder, model, apiKey, runs, seed, level, baseline) }
  */
 export async function doseResponse(persona, opts = {}) {
-  const { facet: facetSpec, levels = [15, 30, 45, 60, 75, 90], onPoint, ...evalOpts } = opts;
+  const { facet: facetSpec, levels = [15, 30, 45, 60, 75, 90], isolate = false, onPoint, ...evalOpts } = opts;
   const { domain, facet } = resolveFacet(facetSpec);
+  const base = isolate ? neutralBase(persona) : persona;
   const points = [];
   for (const level of levels) {
-    const variant = clonePersona(persona);
+    const variant = clonePersona(base);
     setFacet(variant, domain, facet, level);
     const r = await runEval(variant, evalOpts);
     const measured = typeof r.measured[facet] === 'number' ? Math.round(r.measured[facet]) : null;
@@ -114,6 +131,7 @@ export async function doseResponse(persona, opts = {}) {
   return {
     persona: persona.name,
     facet: `${domain}.${facet}`,
+    isolate: !!isolate,
     provider: evalOpts.provider ?? evalOpts.responder ?? 'anthropic',
     model: (evalOpts.provider ?? evalOpts.responder) === 'perfect' ? '(perfect responder)' : (evalOpts.model ?? 'claude-opus-4-8'),
     runs: evalOpts.runs ?? 1,
@@ -147,7 +165,7 @@ const bar = (v) => (typeof v === 'number'
 export function formatDose(result) {
   const L = [];
   L.push(`PersonalAIty dose-response — ${result.persona}`);
-  L.push(`facet swept: ${result.facet}   model: ${result.model}   inventory: PI-50   runs: ${result.runs}${result.baselineCorrected ? '   [baseline-corrected]' : ''}`);
+  L.push(`facet swept: ${result.facet}${result.isolate ? ' (isolated on a neutral base)' : ''}   model: ${result.model}   inventory: PI-50   runs: ${result.runs}${result.baselineCorrected ? '   [baseline-corrected]' : ''}`);
   L.push('');
   L.push('declared  measured   Δ   sycophancy');
   L.push('─'.repeat(52));
@@ -182,7 +200,7 @@ export function renderDoseSvg(result) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif" role="img" aria-label="Dose-response chart for ${esc(result.facet)}">
   <rect x="0" y="0" width="${W}" height="${H}" rx="12" fill="#ffffff"/>
   <text x="${m.l}" y="26" font-size="15" font-weight="700" fill="#1a1d24">Turn one dial, measure the output: ${esc(result.facet)}</text>
-  <text x="${m.l}" y="43" font-size="11" fill="#6b7280">${esc(result.model)} · PI-50 · ${result.runs} run${result.runs > 1 ? 's' : ''}${result.baselineCorrected ? ' · baseline-corrected' : ''}</text>
+  <text x="${m.l}" y="43" font-size="11" fill="#6b7280">${esc(result.model)} · PI-50 · ${result.runs} run${result.runs > 1 ? 's' : ''}${result.isolate ? ' · isolated on a neutral base' : ''}${result.baselineCorrected ? ' · baseline-corrected' : ''}</text>
   ${grid.map((g) => `<line x1="${m.l}" y1="${Y(g).toFixed(1)}" x2="${W - m.r}" y2="${Y(g).toFixed(1)}" stroke="#eceae3" stroke-width="1"/><text x="${m.l - 8}" y="${(Y(g) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#9aa0ac">${g}</text>`).join('')}
   ${grid.map((g) => `<text x="${X(g).toFixed(1)}" y="${H - m.b + 18}" text-anchor="middle" font-size="10" fill="#9aa0ac">${g}</text>`).join('')}
   <text x="${(m.l + iw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#6b7280">declared facet value (what we asked for)</text>

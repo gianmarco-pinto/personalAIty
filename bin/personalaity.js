@@ -51,6 +51,8 @@ doseresponse — the causal receipt: sweep ONE facet across levels, hold the res
   positively sloped curve means the persona controls behavior, not just self-report.
   --facet   domain.facet to sweep, e.g. agreeableness.flexibility, honesty_humility.sincerity
   --levels  comma-separated values to test (default 15,30,45,60,75,90)
+  --isolate sweep on a NEUTRAL base (all other facets 50, no quirks/boundaries) —
+            the dial's raw transfer function, with no persona gestalt fighting it
   --out     write <prefix>.json and <prefix>.svg (chart) next to the printed table
   personalaity doseresponse honest-sparring --facet agreeableness.flexibility \\
     --provider openrouter --model openai/gpt-4o --out warmth-sweep
@@ -58,7 +60,7 @@ doseresponse — the causal receipt: sweep ONE facet across levels, hold the res
 
 function parseArgs(argv) {
   const args = { _: [] };
-  const flags = new Set(['baseline', 'json', 'help']);
+  const flags = new Set(['baseline', 'json', 'help', 'isolate']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
@@ -251,6 +253,7 @@ if (cmd === 'doseresponse' || cmd === 'dose') {
     const result = await doseResponse(persona, {
       facet: args.facet,
       levels,
+      isolate: !!args.isolate,
       provider,
       model: args.model ?? 'claude-opus-4-8',
       apiKey: args.apiKey,
