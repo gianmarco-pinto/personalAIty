@@ -14,6 +14,8 @@
 
 🤖 **[For robots and androids](https://personalaity.dev/robot/)** — one persona file compiles to how an embodied agent acts (behavior weights), sounds (prosody), and speaks (dialogue), kept coherent across the whole stack.
 
+🫀 **[Watch a persona's mood move](https://personalaity.dev/runtime/)** — the PAD emotional runtime running live: fire a trigger, watch the mood spike and recover at the persona's own pace, and its voice recompile with it.
+
 Every AI product reinvents personality as prose: a paragraph in a system prompt here, a "tone" field there, rewritten per platform, drifting with every model update. PersonalAIty replaces that with what design systems did for color: **personality as tokens** — one declarative, psychometrically grounded file, compiled per target.
 
 ```
@@ -155,7 +157,7 @@ boundaries:                # override everything, always
 - **v0.2** — ✅ reference `chat` compiler (persona → system prompt, trait→marker mapping tables) · ✅ `social` compiler (persona → content style guide) · ⏳ `--translate` for freeform fields
 - **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ✅ behavioral sycophancy battery (`personalaity battery`: pressure scenarios + judge model — measures whether a model *caves*, not just what it claims) · ⏳ drift tracking across model versions
 - **v0.5** — ✅ MCP server (`personalaity-mcp`): define + measure from any agent
-- **v0.4** — ✅ `voice` compiler (prosody parameters) · ✅ `npc` compiler (behavior weights + dialogue profile) · ⏳ runtime state reference implementation (live PAD mood for companions/NPCs)
+- **v0.4** — ✅ `voice` compiler (prosody parameters) · ✅ `npc` compiler (behavior weights + dialogue profile) · ✅ `robot` compiler (embodied-agent build sheet) · ✅ runtime state reference implementation (`personalaity runtime` + [live PAD mood demo](https://personalaity.dev/runtime/))
 
 ## Scientific grounding
 

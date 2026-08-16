@@ -12,6 +12,7 @@ import { compileRobot } from '../src/compile/robot.js';
 import { runEval, profileModel, formatReport, formatModelProfile } from '../src/eval/index.js';
 import { runBattery, formatBattery } from '../src/eval/battery.js';
 import { doseResponse, formatDose, renderDoseSvg } from '../src/eval/dose.js';
+import { createMood, applyEffect, decay, moodOctant, baselineMood } from '../src/runtime/pad.js';
 
 const HELP = `personalaity v0.3
 
@@ -24,6 +25,7 @@ Usage:
   personalaity battery  --provider openrouter --model <id> [--judge <id>] [--json]
   personalaity doseresponse <persona.yaml> --facet <domain.facet> [--levels 15,30,45,60,75,90]
                                        [--provider ...] [--model <id>] [--runs N] [--out <prefix>] [--json]
+  personalaity runtime  <persona.yaml>   simulate the live PAD mood: baseline → each trigger → recovery
 
 Targets:
   chat    (default) system prompt for LLM chat/agents
@@ -280,6 +282,41 @@ if (cmd === 'doseresponse' || cmd === 'dose') {
   } catch (e) {
     console.error(`✗ doseresponse failed: ${e.message}`);
     process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (cmd === 'runtime') {
+  if (errors.length) {
+    console.error(`✗ ${file} failed validation:`);
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  const A = persona.affect ?? {};
+  const reactivity = typeof A.reactivity === 'number' ? A.reactivity : 50;
+  const recovery = typeof A.recovery === 'number' ? A.recovery : 50;
+  const expression = typeof A.expression === 'number' ? A.expression : 50;
+  const base = baselineMood(persona);
+  const triggers = A.triggers ?? [];
+  const sgn = (n) => `${n >= 0 ? '+' : ''}${Math.round(n)}`.padStart(4);
+  const bar = (v) => { const n = Math.round(((v + 100) / 200) * 20); return '·'.repeat(n) + '│' + '·'.repeat(20 - n); };
+  const line = (label, m) => `${label.padEnd(26)} P${sgn(m.pleasure)} A${sgn(m.arousal)} D${sgn(m.dominance)}   ${moodOctant(m).name.padEnd(11)} ${bar(m.pleasure)}`;
+
+  console.log(`PersonalAIty PAD runtime — ${persona.name}`);
+  console.log(`baseline P${sgn(base.pleasure)} A${sgn(base.arousal)} D${sgn(base.dominance)}   reactivity ${reactivity}  recovery ${recovery}  expression ${expression}`);
+  console.log('(each trigger fires from baseline, then relaxes back)\n');
+  console.log(line('baseline', base));
+
+  for (const t of triggers) {
+    const eff = Object.entries(t.effect ?? {}).map(([k, v]) => `${k} ${sgn(v).trim()}`).join(', ');
+    console.log(`\n→ ${t.when}   (${eff})`);
+    let m = applyEffect(createMood(persona), t.effect, { reactivity });
+    console.log(line('  felt', m));
+    for (let i = 1; i <= 5; i++) {
+      m = decay(m, base, { recovery, dt: 1 });
+      console.log(line(`  +${i} tick`, m));
+      if (Math.abs(m.pleasure - base.pleasure) + Math.abs(m.arousal - base.arousal) + Math.abs(m.dominance - base.dominance) < 2) break;
+    }
   }
   process.exit(0);
 }

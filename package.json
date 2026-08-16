@@ -15,7 +15,7 @@
     "SPEC.md"
   ],
   "scripts": {
-    "test": "node test/smoke.js && node test/eval-smoke.js && node --test test/unit.test.js test/schema.test.js test/golden.test.js test/mcp.test.js test/battery.test.js test/dose.test.js",
+    "test": "node test/smoke.js && node test/eval-smoke.js && node --test test/unit.test.js test/schema.test.js test/golden.test.js test/mcp.test.js test/battery.test.js test/dose.test.js test/pad.test.js",
     "test:update-golden": "UPDATE_GOLDEN=1 node --test test/golden.test.js",
     "build:demo": "node scripts/build-demo-personas.js",
     "prepublishOnly": "npm test"

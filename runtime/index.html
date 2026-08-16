@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live mood · PersonalAIty</title>
+<meta name="description" content="A live PAD emotional runtime: fire a persona's triggers and watch its mood spike and recover in real time, and its voice recompile with it.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422;
+    --p:#f5a524; --a:#3fb6c4; --d:#b58cf0;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f6; --panel:#fff; --panel2:#f4f2ec; --border:#e2ded3; --text:#22252b;
+      --dim:#6b7280; --accent:#c77d1a; --accent-soft:#c77d1a18;
+      --p:#c77d1a; --a:#1f8b99; --d:#7c5cc0;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.5}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:940px;margin:0 auto;padding:0 1.2rem}
+
+  header{border-bottom:1px solid var(--border);padding:1.6rem 0 1.2rem}
+  h1{font-size:1.7rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .3rem}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--dim);font-size:1rem;margin:.2rem 0;max-width:64ch}
+  header nav{margin-top:.8rem;font-size:.9rem}
+  header nav a{margin-right:1.1rem}
+
+  main{padding:1.3rem 0}
+  .picker{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+  .picker button{background:var(--panel);border:1px solid var(--border);color:var(--dim);border-radius:999px;padding:.35rem .85rem;font-size:.85rem;cursor:pointer;font-weight:600}
+  .picker button.on{color:var(--text);border-color:var(--accent);background:var(--accent-soft)}
+
+  .grid{display:grid;grid-template-columns:1.3fr 1fr;gap:1rem}
+  @media(max-width:720px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem}
+  .card h2{font-size:.95rem;margin:0 0 .1rem}
+  .card .hint{color:var(--dim);font-size:.8rem;margin:0 0 .8rem}
+
+  .mood{display:flex;align-items:baseline;gap:.6rem;margin:.1rem 0 .9rem}
+  .mood .oct{font-size:1.35rem;font-weight:800}
+  .mood .del{color:var(--dim);font-size:.85rem}
+  .rows{display:flex;flex-direction:column;gap:.7rem}
+  .axis{}
+  .axis .lab{display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.2rem}
+  .axis .lab .nm{font-weight:600}
+  .axis .lab .nm.p{color:var(--p)} .axis .lab .nm.a{color:var(--a)} .axis .lab .nm.d{color:var(--d)}
+  .axis .lab .vv{font-family:var(--mono);color:var(--dim)}
+  .track{position:relative;height:12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px}
+  .track .mid{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--border)}
+  .track .fill{position:absolute;top:0;bottom:0;border-radius:5px;transition:left .12s linear,width .12s linear}
+  .track .fill.p{background:var(--p)} .track .fill.a{background:var(--a)} .track .fill.d{background:var(--d)}
+  .track .base{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.5;transition:left .12s linear}
+  .track .shown{position:absolute;top:50%;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:6px solid var(--text);transform:translate(-4px,-3px);transition:left .12s linear}
+
+  .spark{margin-top:1rem}
+  .spark svg{width:100%;height:70px;display:block}
+  .spark .leg{display:flex;gap:1rem;font-size:.75rem;color:var(--dim);margin-top:.2rem}
+  .spark .leg i{display:inline-block;width:14px;height:0;border-top:2px solid;vertical-align:middle;margin-right:.3rem}
+
+  .triggers{display:flex;flex-direction:column;gap:.5rem}
+  .triggers button{text-align:left;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:9px;padding:.55rem .8rem;font-size:.86rem;cursor:pointer;line-height:1.35}
+  .triggers button:hover{border-color:var(--accent)}
+  .triggers button .eff{display:block;color:var(--dim);font-size:.74rem;font-family:var(--mono);margin-top:.15rem}
+  .rowbtns{display:flex;gap:.5rem;margin-top:.2rem}
+  .rowbtns button{background:none;border:1px solid var(--border);color:var(--dim);border-radius:8px;padding:.4rem .7rem;font-size:.8rem;cursor:pointer;font-weight:600}
+  .rowbtns button:hover{color:var(--text);border-color:var(--accent)}
+
+  .voice{margin-top:.9rem}
+  .voice .vrow{display:flex;justify-content:space-between;font-size:.82rem;padding:.16rem 0;border-bottom:1px solid var(--border)}
+  .voice .vrow .vlab{color:var(--dim)}
+  .voice .vrow .vnum{font-family:var(--mono);font-weight:700}
+
+  .note{color:var(--dim);font-size:.86rem;margin-top:1.2rem;max-width:70ch}
+  .badge{font-family:var(--mono);font-size:.7rem;background:var(--panel2);border:1px solid var(--border);padding:.1rem .4rem;border-radius:5px;color:var(--dim)}
+  footer{padding:1.4rem 0 2.4rem;color:var(--dim);font-size:.85rem;border-top:1px solid var(--border);margin-top:1rem}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>A mood that <em>moves</em>, and recovers</h1>
+  <p class="sub">The persona's emotional dynamics, running live. Fire an event and watch the mood spike, then relax back toward its baseline at the persona's own pace. The voice recompiles with it.</p>
+  <nav>
+    <a href="/">Builder</a>
+    <a href="/robot/">Robots</a>
+    <a href="/start/">Get started</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+  </nav>
+</div></header>
+
+<main><div class="wrap">
+  <div class="picker" id="picker"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Felt state <span class="badge">PAD, -100 to +100</span></h2>
+      <p class="hint">Bars show what it feels. The tall tick is its baseline; the small triangle is how much actually <em>shows</em> (expression).</p>
+      <div class="mood"><span class="oct" id="oct">Even</span><span class="del" id="del"></span></div>
+      <div class="rows" id="rows"></div>
+      <div class="spark">
+        <svg id="spark" viewBox="0 0 300 70" preserveAspectRatio="none"></svg>
+        <div class="leg"><span><i style="border-color:var(--p)"></i>pleasure</span><span><i style="border-color:var(--a)"></i>arousal</span><span><i style="border-color:var(--d)"></i>dominance</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Fire an event</h2>
+      <p class="hint">Each button is one of this persona's declared triggers.</p>
+      <div class="triggers" id="triggers"></div>
+      <div class="rowbtns">
+        <button id="reset">Reset to baseline</button>
+        <button id="pause">Pause decay</button>
+      </div>
+      <div class="voice">
+        <h2 style="margin-top:1rem">Its voice right now <span class="badge">recompiled live</span></h2>
+        <p class="hint">Prosody re-derived from the current mood, the same output the Voice and Robot compilers produce.</p>
+        <div id="voice"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">This is the reference runtime for the spec's <span class="badge">affect</span> block: a baseline mood, <b>reactivity</b> (how hard events hit), <b>recovery</b> (how fast it returns), and <b>expression</b> (how much shows). Nothing here is hand-mapped, the voice readout is the existing compiler re-run with the live mood as its baseline. In an embodied agent this loop runs continuously, so the robot's tone tracks what just happened to it.</p>
+</div></main>
+
+<footer><div class="wrap">
+  Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>. Runtime source: <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/src/runtime/pad.js">pad.js</a>. MIT + CC-BY-4.0.
+</div></footer>
+
+<script type="module">
+import { PERSONAS } from '../demo/personas.js';
+import { createMood, applyEffect, decay, moodOctant, baselineMood, displayedMood, withMood } from '../src/runtime/pad.js';
+import { prosodyParams } from '../src/compile/voice.js';
+
+const $ = (s) => document.querySelector(s);
+const AXES = [['pleasure','p'],['arousal','a'],['dominance','d']];
+const pct = (v) => (v + 100) / 2; // -100..100 → 0..100
+
+let persona = PERSONAS[0];
+let mood = createMood(persona);
+let base = baselineMood(persona);
+let trace = [];
+let paused = false;
+const MAXT = 150;
+
+// build persona picker
+PERSONAS.forEach((p, i) => {
+  const b = document.createElement('button');
+  b.textContent = p.name.replace(/^The /, '');
+  b.addEventListener('click', () => selectPersona(i));
+  $('#picker').appendChild(b);
+});
+
+// build the three axis bars once
+const bars = {};
+for (const [ax, cls] of AXES) {
+  const el = document.createElement('div');
+  el.className = 'axis';
+  el.innerHTML = `<div class="lab"><span class="nm ${cls}">${ax}</span><span class="vv" data-v="${ax}">0</span></div>
+    <div class="track"><div class="mid"></div><div class="base" data-base="${ax}"></div><div class="fill ${cls}" data-fill="${ax}"></div><div class="shown" data-shown="${ax}"></div></div>`;
+  $('#rows').appendChild(el);
+  bars[ax] = el;
+}
+
+function selectPersona(i) {
+  persona = PERSONAS[i];
+  base = baselineMood(persona);
+  mood = createMood(persona);
+  trace = [];
+  document.querySelectorAll('#picker button').forEach((b, j) => b.classList.toggle('on', j === i));
+  buildTriggers();
+  render();
+}
+
+function buildTriggers() {
+  const c = $('#triggers');
+  c.innerHTML = '';
+  const ts = persona.affect?.triggers ?? [];
+  if (!ts.length) { c.innerHTML = '<p class="hint">This persona declares no triggers.</p>'; return; }
+  for (const t of ts) {
+    const eff = Object.entries(t.effect ?? {}).map(([k, v]) => `${k} ${v >= 0 ? '+' : ''}${v}`).join(', ');
+    const b = document.createElement('button');
+    b.innerHTML = `${t.when}<span class="eff">${eff}</span>`;
+    b.addEventListener('click', () => fire(t.effect));
+    c.appendChild(b);
+  }
+}
+
+function fire(effect) {
+  const reactivity = persona.affect?.reactivity ?? 50;
+  mood = applyEffect(mood, effect, { reactivity });
+  render();
+}
+
+function render() {
+  const shown = displayedMood(persona, mood);
+  for (const [ax, cls] of AXES) {
+    const v = mood[ax];
+    const p = pct(v), bp = pct(base[ax]), sp = pct(shown[ax]);
+    const fill = bars[ax].querySelector(`[data-fill="${ax}"]`);
+    if (v >= 0) { fill.style.left = '50%'; fill.style.width = (p - 50) + '%'; }
+    else { fill.style.left = p + '%'; fill.style.width = (50 - p) + '%'; }
+    bars[ax].querySelector(`[data-base="${ax}"]`).style.left = bp + '%';
+    bars[ax].querySelector(`[data-shown="${ax}"]`).style.left = sp + '%';
+    bars[ax].querySelector(`[data-v="${ax}"]`).textContent = (v >= 0 ? '+' : '') + Math.round(v);
+  }
+  const oc = moodOctant(mood);
+  $('#oct').textContent = oc.name;
+  $('#del').textContent = oc.delivery ? '(' + oc.delivery + ')' : '';
+  renderVoice();
+  drawSpark();
+}
+
+const VLABELS = { pace:'Pace', pitch_height:'Pitch height', pitch_variation:'Pitch variation', warmth:'Warmth', intensity:'Intensity', hesitation:'Hesitation' };
+function renderVoice() {
+  const pr = prosodyParams(withMood(persona, mood));
+  const c = $('#voice');
+  c.innerHTML = '';
+  for (const k of Object.keys(VLABELS)) {
+    const row = document.createElement('div');
+    row.className = 'vrow';
+    row.innerHTML = `<span class="vlab">${VLABELS[k]}</span><span class="vnum">${pr[k]}</span>`;
+    c.appendChild(row);
+  }
+}
+
+function drawSpark() {
+  const svg = $('#spark');
+  const W = 300, H = 70;
+  const y = (v) => H - ((v + 100) / 200) * H;
+  const x = (i) => (i / (MAXT - 1)) * W;
+  const path = (ax) => trace.map((m, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(m[ax]).toFixed(1)}`).join(' ');
+  svg.innerHTML =
+    `<line x1="0" y1="${H/2}" x2="${W}" y2="${H/2}" stroke="var(--border)" stroke-width="1"/>` +
+    `<path d="${path('pleasure')}" fill="none" stroke="var(--p)" stroke-width="1.6"/>` +
+    `<path d="${path('arousal')}" fill="none" stroke="var(--a)" stroke-width="1.6"/>` +
+    `<path d="${path('dominance')}" fill="none" stroke="var(--d)" stroke-width="1.6"/>`;
+}
+
+$('#reset').addEventListener('click', () => { mood = createMood(persona); trace = []; render(); });
+$('#pause').addEventListener('click', (e) => { paused = !paused; e.target.textContent = paused ? 'Resume decay' : 'Pause decay'; });
+
+// live loop: decay toward baseline and roll the trace
+setInterval(() => {
+  if (!paused) mood = decay(mood, base, { recovery: persona.affect?.recovery ?? 50, dt: 0.12 });
+  trace.push({ ...mood });
+  if (trace.length > MAXT) trace.shift();
+  render();
+}, 110);
+
+selectPersona(0);
+</script>
+</body>
+</html>
