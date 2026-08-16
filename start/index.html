@@ -58,6 +58,20 @@
   .rung .foot a{margin-left:auto;font-weight:600;white-space:nowrap}
   .chip{font-family:var(--mono);font-size:.72rem;background:var(--accent-soft);color:var(--accent);border:1px solid var(--border);padding:.1rem .45rem;border-radius:5px}
 
+  .ladder{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;margin:1rem 0 .3rem}
+  .ladder .node{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:.45rem .75rem;font-size:.88rem;white-space:nowrap}
+  .ladder .node.cap{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .ladder .arrow{color:var(--dim);font-size:.9rem}
+  .ladder-note{color:var(--dim);font-size:.85rem;margin:.1rem 0 0}
+  .faces{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:1.1rem 0 .6rem}
+  @media(max-width:680px){ .faces{grid-template-columns:1fr} }
+  .face{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:.95rem 1.05rem}
+  .face .t{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.03em;text-transform:uppercase}
+  .face b{display:block;font-size:1rem;margin:.15rem 0 .25rem}
+  .face p{margin:0;font-size:.89rem;color:var(--dim)}
+  .frontier-note{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.7rem .95rem;font-size:.88rem;color:var(--dim);margin-top:.6rem}
+  .frontier-note b{color:var(--text)}
+
   section{padding:1.4rem 0;border-top:1px solid var(--border)}
   h3{font-size:1.1rem;margin:0 0 .6rem}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
@@ -129,6 +143,32 @@
     </div>
 
   </div>
+</div></section>
+
+<section id="embodied"><div class="wrap">
+  <h3>The frontier: personality for embodied AI</h3>
+  <p class="lead">AI is leaving the screen. Service robots, humanoid androids, home companions — an industry being built right now. Every one of these machines needs a character, and today each vendor rebuilds it from scratch, subsystem by subsystem. The result is a robot whose <b>voice, words, and actions do not agree</b>. That is the gap this is built to close.</p>
+
+  <div class="ladder">
+    <span class="node">💬 Chatbot</span>
+    <span class="arrow">→</span>
+    <span class="node">🔊 Voicebot</span>
+    <span class="arrow">→</span>
+    <span class="node">🎮 Game NPC</span>
+    <span class="arrow">→</span>
+    <span class="node cap">🤖 Robot / Android</span>
+  </div>
+  <p class="ladder-note">Increasing embodiment, one persona file feeding them all. A robot is an NPC that is real: it does not just speak, it acts in the world.</p>
+
+  <p style="margin-top:1rem">A physical agent has three faces, and they have to be <b>one character</b>. The same persona file already compiles to all three:</p>
+  <div class="faces">
+    <div class="face"><span class="t">chat →</span><b>What it says</b><p>The dialogue prompt for the language model behind the robot: how it reasons, what it will and will not say.</p></div>
+    <div class="face"><span class="t">voice →</span><b>How it sounds</b><p>Prosody parameters — pace, pitch, warmth, hesitation — mapped onto its text-to-speech, so the voice matches the character.</p></div>
+    <div class="face"><span class="t">npc →</span><b>How it acts</b><p>Behavior weights (helpfulness, boldness, patience, dominance, curiosity) plus emotional reactions, the parameters an embodied agent's behavior policy needs.</p></div>
+  </div>
+  <p>Define the character once, and the android is warm in its words, warm in its voice, and warm in what it does. Not warm in one and robotic in the other two.</p>
+
+  <div class="frontier-note"><b>Where this is today, honestly:</b> the behavior-weights output is the embodied-agent foundation you can use now. A live runtime — a mood that shifts and recovers in real time as the robot interacts, driven by the persona's emotional dynamics — is the next build on the roadmap, not a shipped feature yet.</div>
 </div></section>
 
 <section id="how"><div class="wrap">

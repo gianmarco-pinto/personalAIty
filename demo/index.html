@@ -60,6 +60,12 @@
   .tabs .spacer{flex:1}
   .tabs .act{background:none;border:1px solid var(--border);color:var(--dim);font-weight:500}
   .tabs .act:hover{color:var(--text);border-color:var(--accent)}
+  .tabhint{display:none;margin-bottom:.7rem;padding:.7rem .9rem;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;font-size:.83rem;line-height:1.5;color:var(--dim)}
+  .tabhint.show{display:block}
+  .tabhint b{color:var(--text)}
+  .tabhint code{font-family:var(--mono);font-size:.9em;background:var(--panel2);padding:.05rem .3rem;border-radius:4px}
+  .tabhint .map{margin:.45rem 0 0;padding-left:1.05rem}
+  .tabhint .map li{margin:.16rem 0}
 
   .outwrap{border:1px solid var(--border);border-radius:12px;background:var(--panel2);overflow:hidden}
   pre#out{margin:0;padding:1.1rem 1.3rem;font-family:var(--mono);font-size:.8rem;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:72vh;overflow:auto}
@@ -104,6 +110,7 @@
       <button class="act" id="copy">Copy</button>
       <button class="act" id="download">Download</button>
     </div>
+    <div id="tabhint" class="tabhint"></div>
     <div class="outwrap">
       <pre id="out"></pre>
       <div class="meta"><span id="meta"></span><span>compiled live by the reference compilers</span></div>
@@ -194,7 +201,7 @@ function buildControls() {
   const c = $('#controls');
   c.innerHTML = '';
 
-  const [vg, vrows] = group('Voice', true);
+  const [vg, vrows] = group('Communication style', true);
   for (const [k, lbl] of VOICE) vrows.appendChild(row(lbl, state.voice[k], (v) => (state.voice[k] = v)));
   vrows.appendChild(row('Humor frequency', state.voice.humor.frequency, (v) => (state.voice.humor.frequency = v)));
   c.appendChild(vg);
@@ -248,10 +255,32 @@ PERSONAS.forEach((p, i) => {
 
 // tabs (deep-linkable: /#voice, /#npc, …)
 const TABS = ['chat', 'social', 'voice', 'npc', 'spec'];
+const TAB_HINTS = {
+  chat: `Paste this into your bot's <b>system prompt</b> or Instructions field.`,
+  social: `A content style guide — hand it to your writers or your AI copywriter.`,
+  voice: `<b>Two parts, one character.</b> The system prompt (top) drives <em>what</em> the agent says; the <code>PROSODY</code> block (bottom) is <em>how</em> it sounds. Prosody values are provider-neutral 0–100 — map them onto your TTS engine:
+    <ul class="map">
+      <li><b>Pace</b> → speaking rate (SSML <code>rate</code>, or your engine's speed)</li>
+      <li><b>Pitch height / variation</b> → baseline pitch and how much intonation moves</li>
+      <li><b>Warmth</b> → a warmer timbre or a friendlier voice preset</li>
+      <li><b>Intensity</b> → energy and emphasis</li>
+      <li><b>Hesitation</b> → filler words and disfluency, or keep it fluent</li>
+    </ul>
+    On ElevenLabs, roughly: <code>stability</code> ↔ inverse of pitch variation, <code>style</code> ↔ intensity. On Vapi / Retell, feed the prompt to the agent and set the voice knobs to match.`,
+  npc: `Behavior weights (0–100) feed your game or agent logic; the dialogue profile drives its lines. The Gruff Heart of Gold scores helpfulness 88 <em>and</em> hostility 85 at once.`,
+  spec: `The raw persona as JSON — the single source every other tab compiles from.`,
+};
+function updateHint(name) {
+  const h = document.querySelector('#tabhint');
+  const html = TAB_HINTS[name];
+  h.innerHTML = html || '';
+  h.classList.toggle('show', !!html);
+}
 function activateTab(name) {
   if (!TABS.includes(name)) return;
   tab = name;
   document.querySelectorAll('.tabs [data-tab]').forEach((x) => x.classList.toggle('on', x.dataset.tab === name));
+  updateHint(name);
   refresh();
 }
 document.querySelectorAll('.tabs [data-tab]').forEach((b) => {
@@ -278,6 +307,7 @@ $('#download').addEventListener('click', () => {
 });
 
 selectPersona(0);
+updateHint(tab);
 {
   const initial = location.hash.replace('#', '');
   if (TABS.includes(initial)) activateTab(initial);
