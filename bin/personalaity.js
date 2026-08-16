@@ -8,6 +8,7 @@ import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
 import { compileVoice } from '../src/compile/voice.js';
 import { compileNpc } from '../src/compile/npc.js';
+import { compileRobot } from '../src/compile/robot.js';
 import { runEval, profileModel, formatReport, formatModelProfile } from '../src/eval/index.js';
 import { runBattery, formatBattery } from '../src/eval/battery.js';
 import { doseResponse, formatDose, renderDoseSvg } from '../src/eval/dose.js';
@@ -15,7 +16,7 @@ import { doseResponse, formatDose, renderDoseSvg } from '../src/eval/dose.js';
 const HELP = `personalaity v0.3
 
 Usage:
-  personalaity compile  <persona.yaml> [--target chat|social] [--level full|style] [--lang en|it] [--out file]
+  personalaity compile  <persona.yaml> [--target chat|social|voice|npc|robot] [--level full|style] [--lang en|it] [--out file]
   personalaity validate <persona.yaml>
   personalaity eval     <persona.yaml> [--provider anthropic|openrouter|perfect] [--model <id>]
                                        [--level full|style] [--runs N] [--seed N] [--baseline] [--json]
@@ -27,6 +28,9 @@ Usage:
 Targets:
   chat    (default) system prompt for LLM chat/agents
   social  content style guide for social media voice (en only)
+  voice   spoken-delivery profile: prompt + prosody params for a TTS/voice agent
+  npc     game/agent NPC: behavior weights + dialogue profile + reactions
+  robot   embodied-agent build sheet: behavior weights + prosody + dialogue, in one
 
 Levels (chat target only):
   full    (default) the complete persona
@@ -176,13 +180,13 @@ if (cmd === 'compile') {
     process.exit(1);
   }
   const target = args.target ?? 'chat';
-  const compilers = { chat: compileChat, social: compileSocial, voice: compileVoice, npc: compileNpc };
+  const compilers = { chat: compileChat, social: compileSocial, voice: compileVoice, npc: compileNpc, robot: compileRobot };
   if (!compilers[target]) {
     console.error(`✗ target '${target}' not implemented yet (available: ${Object.keys(compilers).join(', ')})`);
     process.exit(1);
   }
-  if (args.level && target !== 'chat') {
-    console.error(`✗ --level applies to the chat target only`);
+  if (args.level && target !== 'chat' && target !== 'robot') {
+    console.error(`✗ --level applies to the chat and robot targets only`);
     process.exit(1);
   }
   const out = compilers[target](persona, { lang: args.lang ?? 'en', level: args.level ?? 'full' });

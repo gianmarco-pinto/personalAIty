@@ -18,7 +18,8 @@ Every AI product reinvents personality as prose: a paragraph in a system prompt 
 marta.persona.yaml ──┬──> chat compiler    ──> system prompt (Claude, GPT, local)
                      ├──> voice compiler   ──> prompt + prosody params (TTS/agents)
                      ├──> npc compiler     ──> behavior weights + dialogue profile
-                     └──> social compiler  ──> content style guide
+                     ├──> social compiler  ──> content style guide
+                     └──> robot compiler   ──> behavior + prosody + dialogue, one build sheet (embodied agents)
 ```
 
 ## Why another format?

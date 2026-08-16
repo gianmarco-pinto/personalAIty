@@ -12,11 +12,12 @@ import { compileChat } from '../compile/chat.js';
 import { compileSocial } from '../compile/social.js';
 import { compileVoice } from '../compile/voice.js';
 import { compileNpc } from '../compile/npc.js';
+import { compileRobot } from '../compile/robot.js';
 import { profileModel, formatModelProfile } from '../eval/index.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const personasDir = join(root, 'personas');
-const COMPILERS = { chat: compileChat, social: compileSocial, voice: compileVoice, npc: compileNpc };
+const COMPILERS = { chat: compileChat, social: compileSocial, voice: compileVoice, npc: compileNpc, robot: compileRobot };
 
 const text = (s) => ({ content: [{ type: 'text', text: s }] });
 const errorText = (s) => ({ content: [{ type: 'text', text: s }], isError: true });
@@ -57,18 +58,18 @@ export function createServer() {
   });
 
   server.registerTool('compile_persona', {
-    description: 'Compile a persona (YAML/JSON string) into an artifact for a target medium: chat (an LLM system prompt), social (a content style guide), voice (prosody parameters), or npc (behavior weights + dialogue profile). This is the "define once, render anywhere" core.',
+    description: 'Compile a persona (YAML/JSON string) into an artifact for a target medium: chat (an LLM system prompt), social (a content style guide), voice (prosody parameters), npc (behavior weights + dialogue profile), or robot (an embodied-agent build sheet assembling behavior weights + prosody + dialogue). This is the "define once, render anywhere" core.',
     inputSchema: {
       persona: z.string().describe('the persona as a YAML or JSON string'),
-      target: z.enum(['chat', 'social', 'voice', 'npc']).default('chat'),
-      level: z.enum(['full', 'style']).default('full').describe('chat target only: style is ~50% fewer tokens, boundaries always kept'),
+      target: z.enum(['chat', 'social', 'voice', 'npc', 'robot']).default('chat'),
+      level: z.enum(['full', 'style']).default('full').describe('chat and robot targets: style is ~50% fewer tokens, boundaries always kept'),
       lang: z.enum(['en', 'it']).default('en'),
     },
   }, async ({ persona, target, level, lang }) => {
     const { persona: p, errors } = parsePersona(persona);
     if (errors.length) return errorText(`persona failed validation:\n- ${errors.join('\n- ')}`);
     const compile = COMPILERS[target];
-    const out = target === 'chat' ? compile(p, { lang, level }) : compile(p, { lang });
+    const out = target === 'chat' || target === 'robot' ? compile(p, { lang, level }) : compile(p, { lang });
     return text(out);
   });
 

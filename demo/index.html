@@ -105,6 +105,7 @@
       <button data-tab="social">Social guide</button>
       <button data-tab="voice">Voice + prosody</button>
       <button data-tab="npc">Game NPC</button>
+      <button data-tab="robot">Robot / Android</button>
       <button data-tab="spec">Spec (JSON)</button>
       <span class="spacer"></span>
       <button class="act" id="copy">Copy</button>
@@ -129,6 +130,7 @@ import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
 import { compileVoice } from '../src/compile/voice.js';
 import { compileNpc } from '../src/compile/npc.js';
+import { compileRobot } from '../src/compile/robot.js';
 import { band } from '../src/compile/util.js';
 import { PERSONAS } from './personas.js';
 
@@ -221,6 +223,7 @@ function currentOutput() {
   if (tab === 'social') return compileSocial(state, { lang: 'en' });
   if (tab === 'voice') return compileVoice(state, { lang: 'en' });
   if (tab === 'npc') return compileNpc(state, { lang: 'en' });
+  if (tab === 'robot') return compileRobot(state, { lang: 'en' });
   return JSON.stringify(state, null, 2);
 }
 
@@ -254,7 +257,7 @@ PERSONAS.forEach((p, i) => {
 });
 
 // tabs (deep-linkable: /#voice, /#npc, …)
-const TABS = ['chat', 'social', 'voice', 'npc', 'spec'];
+const TABS = ['chat', 'social', 'voice', 'npc', 'robot', 'spec'];
 const TAB_HINTS = {
   chat: `Paste this into your bot's <b>system prompt</b> or Instructions field.`,
   social: `A content style guide — hand it to your writers or your AI copywriter.`,
@@ -268,6 +271,7 @@ const TAB_HINTS = {
     </ul>
     On ElevenLabs, roughly: <code>stability</code> ↔ inverse of pitch variation, <code>style</code> ↔ intensity. On Vapi / Retell, feed the prompt to the agent and set the voice knobs to match.`,
   npc: `Behavior weights (0–100) feed your game or agent logic; the dialogue profile drives its lines. The Gruff Heart of Gold scores helpfulness 88 <em>and</em> hostility 85 at once.`,
+  robot: `<b>The three faces of an embodied agent, in one sheet.</b> A physical robot or android is not a fifth format — it is <em>how it acts</em> (behavior weights), <em>how it sounds</em> (prosody), and <em>what it says</em> (dialogue prompt), kept as one character. Feed the behavior weights to its policy, the prosody to its TTS, the prompt to its language model. All three come from this one persona.`,
   spec: `The raw persona as JSON — the single source every other tab compiles from.`,
 };
 function updateHint(name) {

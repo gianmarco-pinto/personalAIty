@@ -13,7 +13,22 @@ import { compilationNote } from './util.js';
 const clamp = (v) => Math.max(0, Math.min(100, Math.round(v)));
 const mean = (...xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const padNorm = (v) => (typeof v === 'number' ? (v + 100) / 2 : 50); // -100..100 → 0..100
-const label3 = (v, [lo, mid, hi]) => (v <= 35 ? lo : v >= 65 ? hi : mid);
+export const label3 = (v, [lo, mid, hi]) => (v <= 35 ? lo : v >= 65 ? hi : mid);
+
+/** Prosody rows [name, value, [low,mid,high] labels] — shared by the voice and
+ *  robot compilers so their prosody blocks never drift apart. */
+export function prosodyRows(p) {
+  const pr = prosodyParams(p);
+  return [
+    ['Pace', pr.pace, ['slow, deliberate', 'measured', 'brisk']],
+    ['Pitch height', pr.pitch_height, ['low', 'mid', 'high']],
+    ['Pitch variation', pr.pitch_variation, ['flat, even', 'moderate', 'expressive']],
+    ['Pauses', pr.pauses, ['clipped, few', 'natural', 'long, frequent']],
+    ['Warmth', pr.warmth, ['cool', 'neutral', 'warm']],
+    ['Intensity', pr.intensity, ['soft', 'moderate', 'forceful']],
+    ['Hesitation / fillers', pr.hesitation, ['none — fluent', 'occasional', 'frequent']],
+  ];
+}
 
 /** Derive prosody parameters (each 0..100) from the persona. */
 export function prosodyParams(p) {
@@ -45,7 +60,6 @@ export function prosodyParams(p) {
 }
 
 export function compileVoice(p, { lang = 'en' } = {}) {
-  const pr = prosodyParams(p);
   const sections = [];
 
   sections.push(`# VOICE — ${p.name}`);
@@ -54,17 +68,8 @@ export function compileVoice(p, { lang = 'en' } = {}) {
   const prompt = compileChat(p, { lang, level: 'style', medium: 'voice' }).trim();
   sections.push(prompt);
 
-  const rows = [
-    ['Pace', pr.pace, ['slow, deliberate', 'measured', 'brisk']],
-    ['Pitch height', pr.pitch_height, ['low', 'mid', 'high']],
-    ['Pitch variation', pr.pitch_variation, ['flat, even', 'moderate', 'expressive']],
-    ['Pauses', pr.pauses, ['clipped, few', 'natural', 'long, frequent']],
-    ['Warmth', pr.warmth, ['cool', 'neutral', 'warm']],
-    ['Intensity', pr.intensity, ['soft', 'moderate', 'forceful']],
-    ['Hesitation / fillers', pr.hesitation, ['none — fluent', 'occasional', 'frequent']],
-  ];
   const body = ['# PROSODY (0–100; map to your TTS engine)'];
-  for (const [name, val, labels] of rows) {
+  for (const [name, val, labels] of prosodyRows(p)) {
     body.push(`- ${name}: ${String(val).padStart(3)}  (${label3(val, labels)})`);
   }
   sections.push(body.join('\n'));

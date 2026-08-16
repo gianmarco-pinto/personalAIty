@@ -11,6 +11,7 @@ import { compileChat } from '../src/compile/chat.js';
 import { compileSocial } from '../src/compile/social.js';
 import { compileVoice } from '../src/compile/voice.js';
 import { compileNpc } from '../src/compile/npc.js';
+import { compileRobot } from '../src/compile/robot.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const goldenDir = join(root, 'test', 'golden');
@@ -24,6 +25,7 @@ const CASES = [
   ['social.en', (p) => compileSocial(p, { lang: 'en' })],
   ['voice.en', (p) => compileVoice(p, { lang: 'en' })],
   ['npc.en', (p) => compileNpc(p, { lang: 'en' })],
+  ['robot.en', (p) => compileRobot(p, { lang: 'en' })],
 ];
 
 const personaFiles = readdirSync(join(root, 'personas')).filter((f) => f.endsWith('.persona.yaml'));
