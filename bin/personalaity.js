@@ -14,7 +14,7 @@ import { runBattery, formatBattery } from '../src/eval/battery.js';
 import { doseResponse, formatDose, renderDoseSvg } from '../src/eval/dose.js';
 import { createMood, applyEffect, decay, moodOctant, baselineMood } from '../src/runtime/pad.js';
 
-const HELP = `personalaity v0.3
+const HELP = `personalaity v0.6
 
 Usage:
   personalaity compile  <persona.yaml> [--target chat|social|voice|npc|robot] [--level full|style] [--lang en|it] [--out file]

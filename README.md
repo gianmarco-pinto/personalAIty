@@ -158,6 +158,7 @@ boundaries:                # override everything, always
 - **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ✅ behavioral sycophancy battery (`personalaity battery`: pressure scenarios + judge model — measures whether a model *caves*, not just what it claims) · ⏳ drift tracking across model versions
 - **v0.5** — ✅ MCP server (`personalaity-mcp`): define + measure from any agent
 - **v0.4** — ✅ `voice` compiler (prosody parameters) · ✅ `npc` compiler (behavior weights + dialogue profile) · ✅ `robot` compiler (embodied-agent build sheet) · ✅ runtime state reference implementation (`personalaity runtime` + [live PAD mood demo](https://personalaity.dev/runtime/))
+- **v0.6** (current) — ✅ dose-response causal validation (`personalaity doseresponse`, sweep one facet and measure the response, plus a high-resolution facet probe; [proof page](https://personalaity.dev/proof/)) · ✅ embodiment story shipped end to end ([robot](https://personalaity.dev/robot/) + [live mood](https://personalaity.dev/runtime/))
 
 ## Scientific grounding
 
