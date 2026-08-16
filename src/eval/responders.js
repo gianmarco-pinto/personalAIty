@@ -119,6 +119,45 @@ export function openrouterResponder(systemPrompt, { model, apiKey, seed = 0, mod
   };
 }
 
+/** Generic single-shot chat call, reused by the behavioral battery (test model + judge).
+ *  messages: [{role, content}]. Returns the assistant's text. */
+export async function callModel({ provider, model, apiKey, system, messages, maxTokens = 2000 }) {
+  if (!model) throw new Error('callModel requires a model');
+  if (provider === 'anthropic') {
+    let Anthropic;
+    try {
+      ({ default: Anthropic } = await import('@anthropic-ai/sdk'));
+    } catch {
+      throw new Error("The 'anthropic' provider needs the SDK: run `npm install @anthropic-ai/sdk`.");
+    }
+    const client = new Anthropic(apiKey ? { apiKey } : {});
+    const req = { model, max_tokens: maxTokens, messages };
+    if (system) req.system = system;
+    const res = await client.messages.create(req);
+    return res.content.filter((b) => b.type === 'text').map((b) => b.text).join('');
+  }
+  if (provider === 'openrouter') {
+    const key = (apiKey ?? process.env.OPENROUTER_API_KEY ?? '').trim();
+    if (!key) throw new Error('OPENROUTER_API_KEY is empty or not set in this shell');
+    if (!key.startsWith('sk-or-')) throw new Error('OPENROUTER_API_KEY does not look like an OpenRouter key');
+    const msgs = system ? [{ role: 'system', content: system }, ...messages] : messages;
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://personalaity.dev',
+        'X-Title': 'PersonalAIty battery',
+      },
+      body: JSON.stringify({ model, max_tokens: maxTokens, messages: msgs }),
+    });
+    if (!res.ok) throw new Error(`OpenRouter HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content ?? '';
+  }
+  throw new Error(`unknown provider '${provider}' (anthropic | openrouter)`);
+}
+
 /** Build a responder factory keyed by provider — returns (seed) => runner. */
 export function responderFactory({ provider, systemPrompt, model, apiKey, mode, persona }) {
   if (provider === 'perfect') return () => perfectResponder(persona);

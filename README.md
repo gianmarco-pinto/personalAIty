@@ -146,7 +146,8 @@ boundaries:                # override everything, always
 
 - **v0.1** — ✅ spec draft, JSON Schema, six-persona gallery
 - **v0.2** — ✅ reference `chat` compiler (persona → system prompt, trait→marker mapping tables) · ✅ `social` compiler (persona → content style guide) · ⏳ `--translate` for freeform fields
-- **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ⏳ behavioral sycophancy battery (scenario probes + LLM judge), drift tracking across model versions, MCP server exposing `check_personality`
+- **v0.3** — ✅ adherence eval: PI-50 inventory administered to the compiled agent, declared-vs-measured HEXACO, sycophancy index · ✅ `--level style` compact compile (~50% fewer tokens, boundaries always kept) · ✅ behavioral sycophancy battery (`personalaity battery`: pressure scenarios + judge model — measures whether a model *caves*, not just what it claims) · ⏳ drift tracking across model versions
+- **v0.5** — ✅ MCP server (`personalaity-mcp`): define + measure from any agent
 - **v0.4** — ✅ `voice` compiler (prosody parameters) · ✅ `npc` compiler (behavior weights + dialogue profile) · ⏳ runtime state reference implementation (live PAD mood for companions/NPCs)
 
 ## Scientific grounding

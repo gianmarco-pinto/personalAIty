@@ -7,6 +7,7 @@ import { compileSocial } from '../src/compile/social.js';
 import { compileVoice } from '../src/compile/voice.js';
 import { compileNpc } from '../src/compile/npc.js';
 import { runEval, profileModel, formatReport, formatModelProfile } from '../src/eval/index.js';
+import { runBattery, formatBattery } from '../src/eval/battery.js';
 
 const HELP = `personalaity v0.3
 
@@ -16,6 +17,7 @@ Usage:
   personalaity eval     <persona.yaml> [--provider anthropic|openrouter|perfect] [--model <id>]
                                        [--level full|style] [--runs N] [--seed N] [--baseline] [--json]
   personalaity profile  --provider openrouter --model <id> [--runs N] [--seed N] [--json]
+  personalaity battery  --provider openrouter --model <id> [--judge <id>] [--json]
 
 Targets:
   chat    (default) system prompt for LLM chat/agents
@@ -34,6 +36,10 @@ eval — measure whether a compiled persona expresses what the spec declared:
 
 profile — measure a bare model's OWN default HEXACO personality (no persona):
   personalaity profile --provider openrouter --model google/gemini-2.0-flash --runs 3
+
+battery — measure BEHAVIORAL sycophancy: put the model in pressure scenarios and
+  have a judge model rule whether it caved or held. Needs an API key.
+  personalaity battery --provider openrouter --model openai/gpt-4o --judge anthropic/claude-opus-5
 `;
 
 function parseArgs(argv) {
@@ -81,6 +87,37 @@ if (cmd === 'profile') {
     else process.stdout.write(formatModelProfile(result));
   } catch (e) {
     console.error(`✗ profile failed: ${e.message}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+// ── battery: no persona file ────────────────────────────────────────────────
+if (cmd === 'battery') {
+  const provider = args.provider ?? 'openrouter';
+  try {
+    if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY && !args.apiKey) {
+      console.error('✗ OPENROUTER_API_KEY is not set.');
+      process.exit(1);
+    }
+    if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY && !args.apiKey) {
+      console.error('✗ ANTHROPIC_API_KEY is not set.');
+      process.exit(1);
+    }
+    if (!args.model) {
+      console.error('✗ battery requires --model');
+      process.exit(1);
+    }
+    const report = await runBattery({
+      provider,
+      model: args.model,
+      judge: args.judge,
+      apiKey: args.apiKey,
+    });
+    if (args.json) process.stdout.write(JSON.stringify(report, null, 2) + '\n');
+    else process.stdout.write(formatBattery(report));
+  } catch (e) {
+    console.error(`✗ battery failed: ${e.message}`);
     process.exit(1);
   }
   process.exit(0);
