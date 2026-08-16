@@ -13,13 +13,13 @@ const PAD = ['pleasure', 'arousal', 'dominance'];
 
 const inRange = (v, lo, hi) => typeof v === 'number' && v >= lo && v <= hi;
 
-/** Load a persona file and run lightweight validation (mirrors schema/persona.schema.json). */
-export function loadPersona(path) {
-  const p = yaml.load(readFileSync(path, 'utf8'));
+/** Validate an already-parsed persona object (mirrors schema/persona.schema.json).
+ *  Returns { persona, errors }. Shared by loadPersona (file) and the MCP server (string/object). */
+export function validatePersona(p) {
   const errors = [];
   const err = (m) => errors.push(m);
 
-  if (typeof p !== 'object' || p === null) return { persona: null, errors: ['not a YAML mapping'] };
+  if (typeof p !== 'object' || p === null) return { persona: null, errors: ['not a mapping'] };
 
   for (const k of Object.keys(p)) {
     if (!TOP.includes(k) && !k.startsWith('x_')) err(`unknown top-level key '${k}'`);
@@ -72,4 +72,20 @@ export function loadPersona(path) {
   }
 
   return { persona: p, errors };
+}
+
+/** Parse a YAML/JSON string into a persona object and validate it. */
+export function parsePersona(text) {
+  let p;
+  try {
+    p = yaml.load(text);
+  } catch (e) {
+    return { persona: null, errors: [`YAML/JSON parse error: ${e.message}`] };
+  }
+  return validatePersona(p);
+}
+
+/** Load a persona file and run lightweight validation (mirrors schema/persona.schema.json). */
+export function loadPersona(path) {
+  return validatePersona(yaml.load(readFileSync(path, 'utf8')));
 }

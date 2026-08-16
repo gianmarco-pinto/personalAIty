@@ -72,6 +72,20 @@ The output is a system prompt (see [examples/](examples/)) — paste it into any
 
 No-tooling path: paste a persona YAML into any capable LLM with "embody this persona" — the structure does the heavy lifting.
 
+## Use it from an agent (MCP)
+
+PersonalAIty ships an MCP server, so agents (Claude Code, Claude Desktop, Cursor, …) can build and test personas as native tools. Add it to your MCP config:
+
+```json
+{
+  "mcpServers": {
+    "personalaity": { "command": "npx", "args": ["-y", "personalaity-mcp"] }
+  }
+}
+```
+
+Tools exposed: `list_personas` and `get_persona` (browse the gallery), `validate_persona` and `compile_persona` (define — turn a persona into a chat/social/voice/npc artifact), and `profile_model` (measure a model's own HEXACO profile; needs `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY` in the server's environment).
+
 ## Token budget
 
 A full-level gallery persona compiles to ~600–1,000 tokens — and the gallery is deliberately extreme, since average facets compile to silence; realistic personas run shorter. The prompt is static, which makes it an ideal prompt-caching candidate (cached reads bill at ~10% of input rates: roughly $0.0004 per request at Opus-class pricing).

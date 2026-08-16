@@ -1,10 +1,11 @@
 {
   "name": "personalaity",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "An open specification for AI personality. Define it once, render it anywhere — HEXACO facets, Schwartz values, PAD dynamics, compiled to any medium and measurable.",
   "type": "module",
   "bin": {
-    "personalaity": "./bin/personalaity.js"
+    "personalaity": "./bin/personalaity.js",
+    "personalaity-mcp": "./bin/personalaity-mcp.js"
   },
   "files": [
     "bin/",
@@ -14,7 +15,7 @@
     "SPEC.md"
   ],
   "scripts": {
-    "test": "node test/smoke.js && node test/eval-smoke.js && node --test test/unit.test.js test/schema.test.js test/golden.test.js",
+    "test": "node test/smoke.js && node test/eval-smoke.js && node --test test/unit.test.js test/schema.test.js test/golden.test.js test/mcp.test.js",
     "test:update-golden": "UPDATE_GOLDEN=1 node --test test/golden.test.js",
     "build:demo": "node scripts/build-demo-personas.js",
     "prepublishOnly": "npm test"
@@ -23,7 +24,9 @@
     "node": ">=18"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^4.4.3"
   },
   "optionalDependencies": {
     "@anthropic-ai/sdk": ">=0.30.0 <1.0.0"
