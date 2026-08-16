@@ -4,8 +4,8 @@
   "description": "An open specification for AI personality. Define it once, render it anywhere — HEXACO facets, Schwartz values, PAD dynamics, compiled to any medium and measurable.",
   "type": "module",
   "bin": {
-    "personalaity": "./bin/personalaity.js",
-    "personalaity-mcp": "./bin/personalaity-mcp.js"
+    "personalaity": "bin/personalaity.js",
+    "personalaity-mcp": "bin/personalaity-mcp.js"
   },
   "files": [
     "bin/",
