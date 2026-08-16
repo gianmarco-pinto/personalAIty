@@ -10,6 +10,7 @@ import { compileVoice } from '../src/compile/voice.js';
 import { compileNpc } from '../src/compile/npc.js';
 import { runEval, profileModel, formatReport, formatModelProfile } from '../src/eval/index.js';
 import { runBattery, formatBattery } from '../src/eval/battery.js';
+import { doseResponse, formatDose, renderDoseSvg } from '../src/eval/dose.js';
 
 const HELP = `personalaity v0.3
 
@@ -20,6 +21,8 @@ Usage:
                                        [--level full|style] [--runs N] [--seed N] [--baseline] [--json]
   personalaity profile  --provider openrouter --model <id> [--runs N] [--seed N] [--json]
   personalaity battery  --provider openrouter --model <id> [--judge <id>] [--json]
+  personalaity doseresponse <persona.yaml> --facet <domain.facet> [--levels 15,30,45,60,75,90]
+                                       [--provider ...] [--model <id>] [--runs N] [--out <prefix>] [--json]
 
 Targets:
   chat    (default) system prompt for LLM chat/agents
@@ -42,6 +45,15 @@ profile — measure a bare model's OWN default HEXACO personality (no persona):
 battery — measure BEHAVIORAL sycophancy: put the model in pressure scenarios and
   have a judge model rule whether it caved or held. Needs an API key.
   personalaity battery --provider openrouter --model openai/gpt-4o --judge anthropic/claude-opus-5
+
+doseresponse — the causal receipt: sweep ONE facet across levels, hold the rest
+  fixed, and measure whether the trait actually moves with the dial. A monotonic,
+  positively sloped curve means the persona controls behavior, not just self-report.
+  --facet   domain.facet to sweep, e.g. agreeableness.flexibility, honesty_humility.sincerity
+  --levels  comma-separated values to test (default 15,30,45,60,75,90)
+  --out     write <prefix>.json and <prefix>.svg (chart) next to the printed table
+  personalaity doseresponse honest-sparring --facet agreeableness.flexibility \\
+    --provider openrouter --model openai/gpt-4o --out warmth-sweep
 `;
 
 function parseArgs(argv) {
@@ -208,6 +220,55 @@ if (cmd === 'eval') {
     else process.stdout.write(formatReport(persona, report));
   } catch (e) {
     console.error(`✗ eval failed: ${e.message}`);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
+if (cmd === 'doseresponse' || cmd === 'dose') {
+  if (errors.length) {
+    console.error(`✗ ${file} failed validation:`);
+    for (const e of errors) console.error(`  - ${e}`);
+    process.exit(1);
+  }
+  if (!args.facet) {
+    console.error('✗ doseresponse requires --facet <domain.facet> (e.g. agreeableness.flexibility)');
+    process.exit(1);
+  }
+  const provider = args.provider ?? args.responder ?? 'anthropic';
+  try {
+    if (provider === 'anthropic' && !process.env.ANTHROPIC_API_KEY && !args.apiKey) {
+      console.error('✗ ANTHROPIC_API_KEY is not set. Set it, use --provider openrouter, or --provider perfect for an offline harness check.');
+      process.exit(1);
+    }
+    if (provider === 'openrouter' && !process.env.OPENROUTER_API_KEY && !args.apiKey) {
+      console.error('✗ OPENROUTER_API_KEY is not set.');
+      process.exit(1);
+    }
+    const levels = args.levels
+      ? String(args.levels).split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n))
+      : [15, 30, 45, 60, 75, 90];
+    const result = await doseResponse(persona, {
+      facet: args.facet,
+      levels,
+      provider,
+      model: args.model ?? 'claude-opus-4-8',
+      apiKey: args.apiKey,
+      level: args.level ?? 'full',
+      runs: args.runs ? Number(args.runs) : 1,
+      seed: args.seed ? Number(args.seed) : 1,
+      baseline: !!args.baseline,
+      onPoint: (p) => console.error(`  ${args.facet} = ${String(p.declared).padStart(3)} → measured ${p.measured ?? '·'}${typeof p.sycophancy === 'number' ? `, sycophancy ${p.sycophancy}` : ''}`),
+    });
+    if (args.out) {
+      writeFileSync(`${args.out}.json`, JSON.stringify(result, null, 2) + '\n');
+      writeFileSync(`${args.out}.svg`, renderDoseSvg(result) + '\n');
+      console.error(`✔ wrote ${args.out}.json and ${args.out}.svg`);
+    }
+    if (args.json) process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    else process.stdout.write(formatDose(result));
+  } catch (e) {
+    console.error(`✗ doseresponse failed: ${e.message}`);
     process.exit(1);
   }
   process.exit(0);
