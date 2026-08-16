@@ -73,6 +73,7 @@
   .rowbtns button:hover{color:var(--text);border-color:var(--accent)}
 
   .voice{margin-top:.9rem}
+  #modnote{font-size:.95rem;color:var(--text);margin:.2rem 0 .6rem}
   .voice .vrow{display:flex;justify-content:space-between;font-size:.82rem;padding:.16rem 0;border-bottom:1px solid var(--border)}
   .voice .vrow .vlab{color:var(--dim)}
   .voice .vrow .vnum{font-family:var(--mono);font-weight:700}
@@ -118,14 +119,15 @@
         <button id="pause">Pause decay</button>
       </div>
       <div class="voice">
-        <h2 style="margin-top:1rem">Its voice right now <span class="badge">recompiled live</span></h2>
-        <p class="hint">Prosody re-derived from the current mood, the same output the Voice and Robot compilers produce.</p>
+        <h2 style="margin-top:1rem">Delivery right now <span class="badge">from the live mood</span></h2>
+        <p class="hint">How the current mood colors expression, relative to this persona's resting delivery. This is what feeds the voice and behavior output, and it relaxes to nothing as the mood recovers.</p>
+        <p id="modnote"></p>
         <div id="voice"></div>
       </div>
     </div>
   </div>
 
-  <p class="note">This is the reference runtime for the spec's <span class="badge">affect</span> block: a baseline mood, <b>reactivity</b> (how hard events hit), <b>recovery</b> (how fast it returns), and <b>expression</b> (how much shows). Nothing here is hand-mapped, the voice readout is the existing compiler re-run with the live mood as its baseline. In an embodied agent this loop runs continuously, so the robot's tone tracks what just happened to it.</p>
+  <p class="note">This is the reference runtime for the spec's <span class="badge">affect</span> block: a baseline mood, <b>reactivity</b> (how hard events hit), <b>recovery</b> (how fast it returns), and <b>expression</b> (how much shows). The delivery nudges are the runtime's modulation layer, scaled by expression, so a guarded persona feels a lot and shows little. In an embodied agent this loop runs continuously, so the robot's tone tracks what just happened to it.</p>
 </div></main>
 
 <footer><div class="wrap">
@@ -134,8 +136,7 @@
 
 <script type="module">
 import { PERSONAS } from '../demo/personas.js';
-import { createMood, applyEffect, decay, moodOctant, baselineMood, displayedMood, withMood } from '../src/runtime/pad.js';
-import { prosodyParams } from '../src/compile/voice.js';
+import { createMood, applyEffect, decay, moodOctant, baselineMood, displayedMood, moodModulation, moodModulationNote } from '../src/runtime/pad.js';
 
 const $ = (s) => document.querySelector(s);
 const AXES = [['pleasure','p'],['arousal','a'],['dominance','d']];
@@ -212,19 +213,21 @@ function render() {
   const oc = moodOctant(mood);
   $('#oct').textContent = oc.name;
   $('#del').textContent = oc.delivery ? '(' + oc.delivery + ')' : '';
-  renderVoice();
+  renderDelivery();
   drawSpark();
 }
 
-const VLABELS = { pace:'Pace', pitch_height:'Pitch height', pitch_variation:'Pitch variation', warmth:'Warmth', intensity:'Intensity', hesitation:'Hesitation' };
-function renderVoice() {
-  const pr = prosodyParams(withMood(persona, mood));
+const MODLABELS = { warmth: 'Warmth', energy: 'Energy', assertiveness: 'Assertiveness' };
+function renderDelivery() {
+  const mod = moodModulation(persona, mood);
+  $('#modnote').textContent = 'Speaking ' + moodModulationNote(mod) + '.';
   const c = $('#voice');
   c.innerHTML = '';
-  for (const k of Object.keys(VLABELS)) {
+  for (const k of Object.keys(MODLABELS)) {
+    const v = mod[k];
     const row = document.createElement('div');
     row.className = 'vrow';
-    row.innerHTML = `<span class="vlab">${VLABELS[k]}</span><span class="vnum">${pr[k]}</span>`;
+    row.innerHTML = `<span class="vlab">${MODLABELS[k]}</span><span class="vnum">${v > 0 ? '+' : ''}${v}</span>`;
     c.appendChild(row);
   }
 }

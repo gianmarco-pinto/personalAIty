@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import {
   baselineMood, createMood, applyEffect, decay, step, moodOctant, intensity,
-  displayedMood, withMood, matchTriggers, fireEvent,
+  displayedMood, withMood, matchTriggers, fireEvent, moodModulation, moodModulationNote,
 } from '../src/runtime/pad.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -77,6 +77,21 @@ test('matchTriggers / fireEvent route an event to the closest trigger', () => {
   assert.ok(fired && mood.pleasure > createMood(persona).pleasure);
   // an unrelated event matches nothing
   assert.equal(fireEvent(persona, createMood(persona), 'the weather is nice today').fired, null);
+});
+
+test('moodModulation is zero at baseline and signed with the mood', () => {
+  const base = createMood(persona);
+  assert.deepEqual(moodModulation(persona, base), { warmth: 0, energy: 0, assertiveness: 0 });
+  const happy = { ...base, pleasure: base.pleasure + 40 };
+  assert.ok(moodModulation(persona, happy).warmth > 0); // pleasure up → warmer
+  const down = { ...base, pleasure: base.pleasure - 40 };
+  assert.ok(moodModulation(persona, down).warmth < 0);
+});
+
+test('moodModulationNote reads baseline as usual and deviations in plain words', () => {
+  assert.equal(moodModulationNote({ warmth: 0, energy: 0, assertiveness: 0 }), 'at its usual delivery');
+  assert.match(moodModulationNote({ warmth: 12, energy: 0, assertiveness: 0 }), /warmer than usual/);
+  assert.match(moodModulationNote({ warmth: 12, energy: 12, assertiveness: 0 }), /warmer and quicker/);
 });
 
 test('intensity is 0 at origin and rises with distance', () => {

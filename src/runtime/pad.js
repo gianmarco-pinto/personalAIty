@@ -101,6 +101,36 @@ export function withMood(persona, mood) {
   return p;
 }
 
+/** How the current mood colours delivery, as signed nudges from the persona's
+ *  resting expression (already scaled by expression, so a guarded persona
+ *  modulates less). pleasure→warmth, arousal→energy, dominance→assertiveness.
+ *  Returns 0s at baseline, so it relaxes to nothing as the mood recovers. */
+export function moodModulation(persona, mood) {
+  const base = baselineMood(persona);
+  const expr = num(persona.affect?.expression, 50) / 100;
+  const d = (ax) => (mood[ax] - base[ax]) * expr;
+  return {
+    warmth: Math.round(d('pleasure') * 0.7),
+    energy: Math.round(d('arousal') * 0.7),
+    assertiveness: Math.round(d('dominance') * 0.7),
+  };
+}
+
+/** Plain-language reading of a modulation, e.g. "a bit warmer and quicker than usual". */
+export function moodModulationNote(mod, dead = 3) {
+  const parts = [];
+  const say = (v, hi, lo) => (v > dead ? hi : v < -dead ? lo : null);
+  const w = say(mod.warmth, 'warmer', 'cooler');
+  const e = say(mod.energy, 'quicker', 'slower');
+  const a = say(mod.assertiveness, 'firmer', 'more tentative');
+  for (const x of [w, e, a]) if (x) parts.push(x);
+  if (!parts.length) return 'at its usual delivery';
+  const strong = Math.max(Math.abs(mod.warmth), Math.abs(mod.energy), Math.abs(mod.assertiveness));
+  const deg = strong >= 20 ? 'much ' : strong >= 10 ? '' : 'a little ';
+  const joined = parts.length > 1 ? parts.slice(0, -1).join(', ') + ' and ' + parts.at(-1) : parts[0];
+  return `${deg}${joined} than usual`;
+}
+
 // ── naive trigger matching (host apps should replace with real event routing) ─
 const STOP = new Set(['the', 'a', 'an', 'of', 'to', 'is', 'in', 'on', 'or', 'and', 'as', 'it',
   'user', 'someone', 'their', 'them', 'they', 'with', 'for', 'when', 'genuinely', 'real']);
