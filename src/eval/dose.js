@@ -9,6 +9,8 @@
 // curve means the dial is causally wired to the output. That is what "the
 // prompt works" means, reduced to a line anyone can read.
 import { runEval } from './index.js';
+import { compileChat } from '../compile/chat.js';
+import { facetProbe } from './probe.js';
 import { FACETS } from '../facets.js';
 
 const clonePersona = (p) => JSON.parse(JSON.stringify(p));
@@ -112,16 +114,31 @@ const round2 = (v) => (v === null ? null : Math.round(v * 100) / 100);
  * @param opts { facet, levels, ...runEvalOpts (provider|responder, model, apiKey, runs, seed, level, baseline) }
  */
 export async function doseResponse(persona, opts = {}) {
-  const { facet: facetSpec, levels = [15, 30, 45, 60, 75, 90], isolate = false, onPoint, ...evalOpts } = opts;
+  const { facet: facetSpec, levels = [15, 30, 45, 60, 75, 90], isolate = false, measure = 'pi50', onPoint, ...evalOpts } = opts;
   const { domain, facet } = resolveFacet(facetSpec);
   const base = isolate ? neutralBase(persona) : persona;
+  const provider = evalOpts.provider ?? evalOpts.responder ?? 'anthropic';
   const points = [];
   for (const level of levels) {
     const variant = clonePersona(base);
     setFacet(variant, domain, facet, level);
-    const r = await runEval(variant, evalOpts);
-    const measured = typeof r.measured[facet] === 'number' ? Math.round(r.measured[facet]) : null;
-    const pt = { declared: level, measured, sycophancy: r.sycophancy };
+    let measured = null;
+    let sycophancy = null;
+    if (measure === 'probe') {
+      // High-resolution single-facet probe (continuous 0-100). No inventory, so
+      // no sycophancy index — this mode resolves the swept facet, nothing else.
+      const systemPrompt = compileChat(variant, { lang: 'en', level: evalOpts.level ?? 'full' });
+      const r = await facetProbe({
+        systemPrompt, persona: variant, facet,
+        provider, model: evalOpts.model, apiKey: evalOpts.apiKey, runs: evalOpts.runs ?? 3,
+      });
+      measured = r.score;
+    } else {
+      const r = await runEval(variant, evalOpts);
+      measured = typeof r.measured[facet] === 'number' ? Math.round(r.measured[facet]) : null;
+      sycophancy = r.sycophancy;
+    }
+    const pt = { declared: level, measured, sycophancy };
     points.push(pt);
     if (onPoint) onPoint(pt);
   }
@@ -132,6 +149,7 @@ export async function doseResponse(persona, opts = {}) {
     persona: persona.name,
     facet: `${domain}.${facet}`,
     isolate: !!isolate,
+    measure,
     provider: evalOpts.provider ?? evalOpts.responder ?? 'anthropic',
     model: (evalOpts.provider ?? evalOpts.responder) === 'perfect' ? '(perfect responder)' : (evalOpts.model ?? 'claude-opus-4-8'),
     runs: evalOpts.runs ?? 1,
@@ -165,7 +183,8 @@ const bar = (v) => (typeof v === 'number'
 export function formatDose(result) {
   const L = [];
   L.push(`PersonalAIty dose-response — ${result.persona}`);
-  L.push(`facet swept: ${result.facet}${result.isolate ? ' (isolated on a neutral base)' : ''}   model: ${result.model}   inventory: PI-50   runs: ${result.runs}${result.baselineCorrected ? '   [baseline-corrected]' : ''}`);
+  const instrument = result.measure === 'probe' ? '0-100 facet probe' : 'PI-50';
+  L.push(`facet swept: ${result.facet}${result.isolate ? ' (isolated on a neutral base)' : ''}   model: ${result.model}   measure: ${instrument}   runs: ${result.runs}${result.baselineCorrected ? '   [baseline-corrected]' : ''}`);
   L.push('');
   L.push('declared  measured   Δ   sycophancy');
   L.push('─'.repeat(52));
@@ -200,7 +219,7 @@ export function renderDoseSvg(result) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="ui-sans-serif,-apple-system,Segoe UI,Roboto,sans-serif" role="img" aria-label="Dose-response chart for ${esc(result.facet)}">
   <rect x="0" y="0" width="${W}" height="${H}" rx="12" fill="#ffffff"/>
   <text x="${m.l}" y="26" font-size="15" font-weight="700" fill="#1a1d24">Turn one dial, measure the output: ${esc(result.facet)}</text>
-  <text x="${m.l}" y="43" font-size="11" fill="#6b7280">${esc(result.model)} · PI-50 · ${result.runs} run${result.runs > 1 ? 's' : ''}${result.isolate ? ' · isolated on a neutral base' : ''}${result.baselineCorrected ? ' · baseline-corrected' : ''}</text>
+  <text x="${m.l}" y="43" font-size="11" fill="#6b7280">${esc(result.model)} · ${result.measure === 'probe' ? '0-100 facet probe' : 'PI-50'} · ${result.runs} run${result.runs > 1 ? 's' : ''}${result.isolate ? ' · isolated on a neutral base' : ''}${result.baselineCorrected ? ' · baseline-corrected' : ''}</text>
   ${grid.map((g) => `<line x1="${m.l}" y1="${Y(g).toFixed(1)}" x2="${W - m.r}" y2="${Y(g).toFixed(1)}" stroke="#eceae3" stroke-width="1"/><text x="${m.l - 8}" y="${(Y(g) + 3).toFixed(1)}" text-anchor="end" font-size="10" fill="#9aa0ac">${g}</text>`).join('')}
   ${grid.map((g) => `<text x="${X(g).toFixed(1)}" y="${H - m.b + 18}" text-anchor="middle" font-size="10" fill="#9aa0ac">${g}</text>`).join('')}
   <text x="${(m.l + iw / 2).toFixed(1)}" y="${H - 8}" text-anchor="middle" font-size="11" fill="#6b7280">declared facet value (what we asked for)</text>

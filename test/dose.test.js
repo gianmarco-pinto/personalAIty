@@ -9,6 +9,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { resolveFacet, setFacet, spearman, slope, doseResponse, verdict, neutralBase } from '../src/eval/dose.js';
+import { parseProbe, probePrompt, facetProbe } from '../src/eval/probe.js';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const persona = yaml.load(readFileSync(join(root, 'personas', 'honest-sparring.persona.yaml'), 'utf8'));
@@ -63,6 +64,41 @@ test('doseResponse --isolate sweeps on a neutral base (clean diagonal, perfect r
   assert.ok(result.spearman >= 0.9);
   // on a neutral base the perfect responder returns the swept level itself
   assert.ok(Math.abs(result.points.at(-1).measured - 90) <= 15);
+});
+
+test('parseProbe reads clean, fenced/truncated, and rejects empty', () => {
+  assert.deepEqual(parseProbe('[{"id":1,"score":20},{"id":2,"score":80}]'), [20, 80]);
+  // truncated array → per-object fallback still recovers the completed scores
+  assert.deepEqual(parseProbe('```json\n[{"id":1,"score":55},{"id":2,"sco'), [55]);
+  // out-of-range clamps
+  assert.deepEqual(parseProbe('[{"id":1,"score":140},{"id":2,"score":-5}]'), [100, 0]);
+  assert.throws(() => parseProbe('I would rather not say.'));
+});
+
+test('probePrompt names the facet and asks for a JSON array', () => {
+  const p = probePrompt('flexibility');
+  assert.match(p, /flexibility/i);
+  assert.match(p, /0 to 100/);
+  assert.match(p, /JSON array/i);
+});
+
+test('facetProbe perfect provider echoes the declared facet value', async () => {
+  const p = { traits: { agreeableness: { facets: { flexibility: 73 } } } };
+  const r = await facetProbe({ persona: p, facet: 'flexibility', provider: 'perfect' });
+  assert.equal(r.score, 73);
+});
+
+test('doseResponse --measure probe (perfect) tracks the declared level', async () => {
+  const result = await doseResponse(persona, {
+    facet: 'agreeableness.flexibility',
+    levels: [20, 50, 80],
+    isolate: true,
+    measure: 'probe',
+    provider: 'perfect',
+  });
+  assert.equal(result.measure, 'probe');
+  assert.deepEqual(result.points.map((p) => p.measured), [20, 50, 80]);
+  assert.equal(result.points[0].sycophancy, null); // no inventory in probe mode
 });
 
 test('doseResponse over the perfect responder is monotonic with slope ~1', async () => {

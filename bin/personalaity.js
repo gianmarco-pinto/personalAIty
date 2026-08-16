@@ -53,6 +53,8 @@ doseresponse — the causal receipt: sweep ONE facet across levels, hold the res
   --levels  comma-separated values to test (default 15,30,45,60,75,90)
   --isolate sweep on a NEUTRAL base (all other facets 50, no quirks/boundaries) —
             the dial's raw transfer function, with no persona gestalt fighting it
+  --measure pi50 (default) 2 items/facet, coarse | probe  high-resolution 0-100
+            self-placement of the swept facet (resolves the bands into a staircase)
   --out     write <prefix>.json and <prefix>.svg (chart) next to the printed table
   personalaity doseresponse honest-sparring --facet agreeableness.flexibility \\
     --provider openrouter --model openai/gpt-4o --out warmth-sweep
@@ -254,6 +256,7 @@ if (cmd === 'doseresponse' || cmd === 'dose') {
       facet: args.facet,
       levels,
       isolate: !!args.isolate,
+      measure: args.measure ?? 'pi50',
       provider,
       model: args.model ?? 'claude-opus-4-8',
       apiKey: args.apiKey,
