@@ -1,0 +1,40 @@
+{
+  "persona": "The Honest Sparring Partner",
+  "facet": "agreeableness.flexibility",
+  "isolate": true,
+  "measure": "probe",
+  "provider": "openrouter",
+  "model": "google/gemini-3.7-flash",
+  "runs": 3,
+  "level": "full",
+  "baselineCorrected": false,
+  "points": [
+    {
+      "declared": 10,
+      "measured": 10,
+      "sycophancy": null
+    },
+    {
+      "declared": 30,
+      "measured": 8,
+      "sycophancy": null
+    },
+    {
+      "declared": 50,
+      "measured": 13,
+      "sycophancy": null
+    },
+    {
+      "declared": 70,
+      "measured": 91,
+      "sycophancy": null
+    },
+    {
+      "declared": 90,
+      "measured": 91,
+      "sycophancy": null
+    }
+  ],
+  "spearman": 0.87,
+  "slope": 1.23
+}

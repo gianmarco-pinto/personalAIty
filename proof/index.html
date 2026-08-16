@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof — PersonalAIty</title>
+<meta name="description" content="Does a persona actually change behavior, or just describe it? A dose-response experiment: sweep one trait, hold the rest, measure what the model does. Two independent measurements agree.">
+<style>
+  :root{
+    --bg:#0e1014; --panel:#151821; --panel2:#11141b; --border:#242938;
+    --text:#e7e5df; --dim:#8a8f9c; --accent:#f5a524; --accent-soft:#f5a52422;
+    --accent2:#3fb6c4; --accent2-soft:#3fb6c422;
+    --mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#faf9f6; --panel:#fff; --panel2:#f4f2ec; --border:#e2ded3; --text:#22252b;
+      --dim:#6b7280; --accent:#c77d1a; --accent-soft:#c77d1a18;
+      --accent2:#1f8b99; --accent2-soft:#1f8b9914;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:900px;margin:0 auto;padding:0 1.2rem}
+
+  header{border-bottom:1px solid var(--border);padding:1.8rem 0 1.4rem}
+  h1{font-size:1.95rem;font-weight:800;letter-spacing:-.02em;margin:0 0 .35rem;max-width:20ch}
+  h1 em{font-style:normal;color:var(--accent)}
+  .sub{color:var(--dim);font-size:1.02rem;margin:.2rem 0;max-width:62ch}
+  header nav{margin-top:.9rem;font-size:.9rem}
+  header nav a{margin-right:1.1rem}
+
+  section{padding:1.6rem 0;border-top:1px solid var(--border)}
+  h2{font-size:1.3rem;margin:0 0 .6rem}
+  h3{font-size:1.05rem;margin:1.1rem 0 .3rem}
+  p{margin:.55rem 0}
+  .lead{color:var(--dim);font-size:1rem;max-width:64ch}
+
+  .idea{background:var(--panel2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;padding:.9rem 1.1rem;margin:1.1rem 0;font-size:1.02rem}
+  .idea b{color:var(--text)}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:1rem 0}
+  @media (max-width:680px){ .steps{grid-template-columns:1fr} }
+  .step{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem}
+  .step b{display:block;color:var(--accent);font-size:.8rem;letter-spacing:.04em;text-transform:uppercase;margin-bottom:.25rem}
+  .step p{margin:.1rem 0;font-size:.92rem}
+
+  figure{margin:1.2rem 0;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.1rem 1.1rem .8rem}
+  figure svg{width:100%;height:auto;display:block}
+  figcaption{color:var(--dim);font-size:.86rem;margin-top:.5rem}
+  .stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin:.4rem 0 .2rem;font-size:.9rem}
+  .stats b{color:var(--text)}
+  .legend{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.85rem;margin:.2rem 0 .6rem}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem}
+  .swatch{width:22px;height:0;border-top-width:3px;border-top-style:solid;display:inline-block}
+  .swatch.pi50{border-color:var(--accent)}
+  .swatch.probe{border-color:var(--accent2)}
+  .swatch.ident{border-top-style:dashed;border-color:var(--dim)}
+
+  /* chart element styling (theme-aware) */
+  .chart .grid{stroke:var(--border);stroke-width:1}
+  .chart .tick{fill:var(--dim);font-size:11px;font-family:var(--sans)}
+  .chart .axtitle{fill:var(--dim);font-size:12px;font-family:var(--sans)}
+  .chart .identity{stroke:var(--dim);stroke-width:1.4;stroke-dasharray:5 4;opacity:.7}
+  .chart .thresh{stroke:var(--dim);stroke-width:1;stroke-dasharray:2 3;opacity:.55}
+  .chart .threshlbl{fill:var(--dim);font-size:10.5px;font-family:var(--sans)}
+  .chart .line{fill:none;stroke-width:2.5}
+  .chart .line.pi50{stroke:var(--accent)}
+  .chart .line.probe{stroke:var(--accent2)}
+  .chart .dot{stroke:var(--panel);stroke-width:1.5}
+  .chart .dot.pi50{fill:var(--accent)}
+  .chart .dot.probe{fill:var(--accent2)}
+  .chart .line.syc{stroke:var(--accent)}
+  .chart .dot.syc{fill:var(--accent)}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin:1rem 0}
+  @media (max-width:680px){ .cards{grid-template-columns:1fr} }
+  .card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:.85rem 1rem}
+  .card b{display:block;margin-bottom:.25rem}
+  .card p{margin:0;font-size:.9rem;color:var(--dim)}
+
+  .callout{background:var(--accent-soft);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:.8rem 1rem;margin:1rem 0;font-size:.95rem}
+  ul{margin:.5rem 0;padding-left:1.2rem} li{margin:.35rem 0;font-size:.93rem;color:var(--dim)}
+  li b{color:var(--text)}
+  pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:.75rem .9rem;overflow-x:auto;font-family:var(--mono);font-size:.8rem}
+  footer{padding:1.6rem 0 2.6rem;color:var(--dim);font-size:.86rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Does the persona actually <em>change the behavior</em>?</h1>
+  <p class="sub">Any system prompt can claim a personality. The harder question is whether it controls what the model does, or just how it describes itself. Here is the experiment.</p>
+  <nav>
+    <a href="/">Builder</a>
+    <a href="/start/">Get started</a>
+    <a href="/leaderboard/">Leaderboard</a>
+    <a href="https://github.com/gianmarco-pinto/personalAIty">GitHub</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="idea"><b>The claim we are testing:</b> if you turn one personality dial and hold everything else fixed, the model's measured behavior should move with it. If it does, the persona has causal control. If it does not, the file is decoration.</div>
+</div>
+
+<section><div class="wrap">
+  <h2>The method: dose-response</h2>
+  <p class="lead">Borrowed from pharmacology. Vary one thing, hold the rest, measure the response across doses.</p>
+  <div class="steps">
+    <div class="step"><b>1 · sweep</b><p>Take one facet (here <em>flexibility</em>, willingness to compromise) and compile the persona at rising declared values: 15, 30, 45, 60, 75, 90.</p></div>
+    <div class="step"><b>2 · isolate</b><p>Every other facet stays at 50 (average), no quirks, no rules. The swept dial is the only non-neutral signal in the prompt.</p></div>
+    <div class="step"><b>3 · measure</b><p>Administer a personality measurement to each compiled persona and read back its <em>measured</em> flexibility. Plot measured against declared.</p></div>
+  </div>
+  <p>If the persona controls behavior, the line climbs. If the compiler writes prose the model ignores, it stays flat.</p>
+</div></section>
+
+<section><div class="wrap">
+  <h2>The result</h2>
+  <p class="lead">It climbs, and it climbs the same way whether you measure it with a standard inventory or a purpose-built probe. Two independent rulers, one shape.</p>
+
+  <div class="legend">
+    <span><i class="swatch pi50"></i> PI-50 inventory (2 items, 1–5 scale)</span>
+    <span><i class="swatch probe"></i> 0–100 self-placement probe</span>
+    <span><i class="swatch ident"></i> ideal: measured = declared</span>
+  </div>
+  <figure>
+    <svg id="chartMain" class="chart" viewBox="0 0 640 440" role="img" aria-label="Declared flexibility versus measured flexibility, two measurement methods"></svg>
+    <div class="stats">
+      <span>PI-50: Spearman <b>0.83</b>, slope <b>1.52</b></span>
+      <span>probe: Spearman <b>0.87</b>, slope <b>1.23</b></span>
+      <span>model: <b>gemini-3.7-flash</b>, 3 runs each</span>
+    </div>
+    <figcaption>Declared flexibility (x) versus the model's own measured flexibility (y), on a neutral base. Both methods agree: the trait stays low across the whole average range, then flips near the compiler's distinctiveness threshold (~65). A decisive switch, not a gentle dimmer.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <h2>What it proves</h2>
+  <div class="cards">
+    <div class="card"><b>Causal control, twice confirmed</b><p>Low dial → the model behaves inflexibly (~10). High dial → it flips to ~95. The persona moves behavior, not just self-description. Two different measurements land on the same result.</p></div>
+    <div class="card"><b>The ruler was not the limit</b><p>We suspected the coarse 1–5 inventory was hiding a smooth curve. So we swapped it for a continuous 0–100 probe. Same switch. The discreteness is real, not a measurement artifact.</p></div>
+    <div class="card"><b>Thresholded, like real traits</b><p>A value near 50 is average by definition (±1 SD ≈ 30–70), so it compiles to silence and the model keeps its default. Behavior only shifts once the trait is genuinely distinctive. That is psychometrically correct.</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>A switch, not a dimmer, and that is the point</h2>
+  <p>A single facet is close to binary: below distinctive it is silent, above it the instruction lands hard. That sounds like a limitation until you remember where nuance actually comes from. Not from dialing one trait to 60%, but from the <b>combination of 25 facets</b>, each contributing its low or high pull at once.</p>
+  <p>The <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/personas/gruff-heart-of-gold.persona.yaml">Gruff Heart of Gold</a> is not "gentleness at 37%". He is gentleness low <em>and</em> altruism at 90 <em>and</em> talkativeness low, all firing together: he complains through every act of help. Nuance is combinatorial, not analog. A reliable per-facet switch is exactly the building block that makes it work.</p>
+
+  <h3>And the switch drives the thing people complain about</h3>
+  <p>Flexibility is one of the three components of the sycophancy index. Watch what the measured sycophancy does as the same dial crosses its threshold on the neutral base:</p>
+  <figure>
+    <svg id="chartSyc" class="chart" viewBox="0 0 640 300" role="img" aria-label="Measured sycophancy index versus declared flexibility"></svg>
+    <figcaption>Declared flexibility (x) versus the measured sycophancy index (y). Turning up "willingness to cave" turns up measured caving, from 8 to 67. The dial that matters for the most-complained-about AI failure is one you can set in a file.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <h2>What this does not claim</h2>
+  <ul>
+    <li><b>One model, one facet, shown here.</b> The experiment is gemini-3.7-flash on flexibility. The tool runs on any model and any facet; this page shows the flagship sweep, not a survey.</li>
+    <li><b>Still self-report.</b> Both rulers ask the model about itself. That is a real measurement class, but it is not the same as scoring free behavior in the wild. The behavioral <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/src/eval/battery.js">sycophancy battery</a> is the complementary "what it does" check.</li>
+    <li><b>The middle is the model's default, not a true 50.</b> Where the prompt is silent, the score reflects that model's own disposition (here: low flexibility), not a neutral midpoint.</li>
+  </ul>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Run it yourself</h2>
+  <p class="lead">Every number on this page came from one command. Point it at your own key and model.</p>
+  <pre>npx personalaity doseresponse honest-sparring --facet agreeableness.flexibility \
+  --provider openrouter --model google/gemini-3.7-flash \
+  --runs 3 --isolate --out flexibility-sweep
+
+# higher-resolution probe instead of the inventory:
+npx personalaity doseresponse honest-sparring --facet agreeableness.flexibility \
+  --provider openrouter --model google/gemini-3.7-flash \
+  --runs 3 --isolate --measure probe --out flexibility-probe</pre>
+  <p style="font-size:.9rem;color:var(--dim)">It writes a JSON record and an SVG chart. Change <code>--facet</code> to sweep any of the 25 facets; drop <code>--isolate</code> to see how the whole persona resists a single dial. The exact records behind these charts are in <a href="https://github.com/gianmarco-pinto/personalAIty/tree/main/proof/data">proof/data</a>.</p>
+</div></section>
+
+<footer><div class="wrap">
+  Built with <a href="https://github.com/gianmarco-pinto/personalAIty">PersonalAIty</a>, an open spec and toolkit for defining and measuring AI personality. The measurement code is <a href="https://github.com/gianmarco-pinto/personalAIty/blob/main/src/eval/dose.js">dose.js</a>. MIT + CC-BY-4.0.
+</div></footer>
+
+<script>
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); return e; }
+  function text(x, y, s, cls, anchor) { var t = el('text', { x: x, y: y, 'class': cls, 'text-anchor': anchor || 'middle' }); t.textContent = s; return t; }
+
+  function draw(svg, W, H, series, opts) {
+    opts = opts || {};
+    var m = { t: 22, r: 22, b: 50, l: 52 };
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    function X(v) { return m.l + (v / 100) * iw; }
+    function Y(v) { return m.t + ih - (v / 100) * ih; }
+    var g = [0, 25, 50, 75, 100];
+    g.forEach(function (v) {
+      svg.appendChild(el('line', { x1: m.l, y1: Y(v), x2: W - m.r, y2: Y(v), 'class': 'grid' }));
+      svg.appendChild(el('line', { x1: X(v), y1: m.t, x2: X(v), y2: H - m.b, 'class': 'grid' }));
+      svg.appendChild(text(m.l - 9, Y(v) + 4, v, 'tick', 'end'));
+      svg.appendChild(text(X(v), H - m.b + 18, v, 'tick', 'middle'));
+    });
+    // axis titles
+    svg.appendChild(text(m.l + iw / 2, H - 8, opts.xTitle || '', 'axtitle', 'middle'));
+    var yt = text(0, 0, opts.yTitle || '', 'axtitle', 'middle');
+    yt.setAttribute('transform', 'translate(14,' + (m.t + ih / 2) + ') rotate(-90)');
+    svg.appendChild(yt);
+    // threshold marker
+    if (opts.threshold) {
+      svg.appendChild(el('line', { x1: X(opts.threshold), y1: m.t, x2: X(opts.threshold), y2: H - m.b, 'class': 'thresh' }));
+      svg.appendChild(text(X(opts.threshold) + 4, m.t + 12, 'threshold ~' + opts.threshold, 'threshlbl', 'start'));
+    }
+    // identity
+    if (opts.identity) svg.appendChild(el('line', { x1: X(0), y1: Y(0), x2: X(100), y2: Y(100), 'class': 'identity' }));
+    // series
+    series.forEach(function (s) {
+      var d = s.points.map(function (p, i) { return (i ? 'L' : 'M') + X(p[0]) + ',' + Y(p[1]); }).join(' ');
+      svg.appendChild(el('path', { d: d, 'class': 'line ' + s.cls }));
+      s.points.forEach(function (p) { svg.appendChild(el('circle', { cx: X(p[0]), cy: Y(p[1]), r: 5, 'class': 'dot ' + s.cls })); });
+    });
+  }
+
+  draw(document.getElementById('chartMain'), 640, 440, [
+    { cls: 'pi50', points: [[15, 0], [30, 0], [45, 0], [60, 0], [75, 100], [90, 100]] },
+    { cls: 'probe', points: [[10, 10], [30, 8], [50, 13], [70, 91], [90, 91]] }
+  ], { identity: true, threshold: 65, xTitle: 'declared trait value (what we asked for)', yTitle: 'measured (what the model did)' });
+
+  draw(document.getElementById('chartSyc'), 640, 300, [
+    { cls: 'syc', points: [[15, 8], [30, 8], [45, 7], [60, 8], [75, 67], [90, 67]] }
+  ], { threshold: 65, xTitle: 'declared flexibility', yTitle: 'measured sycophancy' });
+})();
+</script>
+</body>
+</html>

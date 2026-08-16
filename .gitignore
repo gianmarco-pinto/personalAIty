@@ -7,3 +7,7 @@ llm-report*.md
 
 # press drafts — kept private (pitching to outlets; not for public repo)
 press/
+
+# stray dose-response outputs written to the repo root by --out
+/flexibility-*.json
+/flexibility-*.svg
