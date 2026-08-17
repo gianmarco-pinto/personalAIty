@@ -1,0 +1,43 @@
+{
+  "skill_name": "personalaity",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "My customer-support chatbot keeps caving. If a user pushes back even when they're wrong, it apologizes and agrees with them. I want it polite but able to hold its ground on facts. How do I fix its personality? It runs on the OpenAI API.",
+      "expected_output": "Diagnoses the sycophancy pattern (high flexibility / low sincerity), starts from or adapts honest-sparring (+ a professional, calm tone), compiles a chat system prompt with `npx personalaity`, and tells the user to paste it into the system parameter.",
+      "files": [],
+      "expectations": [
+        "The deliverable includes a ready-to-paste system prompt (a prompt file), not only advice.",
+        "The approach treats sycophancy as a personality trait pattern (mentions flexibility and/or sincerity, or names the honest-sparring persona).",
+        "The persona was produced with the personalaity toolkit (a .persona.yaml is present, or the answer runs personalaity / npx personalaity).",
+        "The answer tells the user where to put the prompt in an OpenAI-API app (the system parameter or system message).",
+        "The deliverable includes concrete usage examples beyond the prompt itself (few-shot exchanges or sample dialogues demonstrating polite pushback)."
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I'm building a voice assistant for a meditation app. I want it to feel calm, warm, and unhurried, and I need the actual voice settings for my TTS, not just a text prompt. Can you help me define its personality?",
+      "expected_output": "Defines a calm/warm/low-arousal persona (adapts warm-companion or authors one), compiles with --target voice, and returns both the system prompt and the prosody parameters, explaining how to map them onto the TTS.",
+      "files": [],
+      "expectations": [
+        "The deliverable includes concrete TTS voice/prosody settings (numeric parameters such as pace/pitch/warmth), not only a text prompt.",
+        "The character is defined as calm, warm, and low-arousal.",
+        "The prosody was produced with the personalaity toolkit's voice target (a .persona.yaml present, or the answer runs personalaity with --target voice).",
+        "The answer explains how to map the prosody parameters onto a TTS engine (mentions TTS / SSML / rate / pitch / a specific provider).",
+        "The deliverable includes at least one sample utterance or SSML snippet demonstrating the pacing (pauses), not only parameter values."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want an NPC for my game: a grumpy old blacksmith who acts tough and complains constantly but secretly looks out for the player. Give me something I can drop into my dialogue and behavior system.",
+      "expected_output": "Recognizes the surface-vs-heart contrast (gruff-heart-of-gold), compiles with --target npc, and returns behavior weights plus a dialogue profile (e.g. high helpfulness alongside high hostility).",
+      "files": [],
+      "expectations": [
+        "The deliverable includes machine-usable NPC behavior data (numeric behavior weights), not only prose dialogue.",
+        "The output captures the surface-vs-heart contrast (high helpfulness alongside high hostility, or names gruff-heart-of-gold).",
+        "The NPC data was produced with the personalaity toolkit's npc target (a .persona.yaml present, or the answer runs personalaity with --target npc).",
+        "The deliverable includes ready-to-use sample dialogue lines for the NPC, not only weights and a style guide."
+      ]
+    }
+  ]
+}

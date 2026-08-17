@@ -11,3 +11,6 @@ press/
 # stray dose-response outputs written to the repo root by --out
 /flexibility-*.json
 /flexibility-*.svg
+
+# skill test workspace (local eval runs)
+/personalaity-skill-workspace/

@@ -81,6 +81,13 @@ The output is a system prompt (see [examples/](examples/)) — paste it into any
 
 No-tooling path: paste a persona YAML into any capable LLM with "embody this persona" — the structure does the heavy lifting.
 
+## Use it as a Claude skill
+
+The repo ships a [Claude skill](skill/SKILL.md) that teaches Claude the whole workflow: turn a character into traits, pick or author a persona, compile it with `npx personalaity`, deliver a working kit, and offer measurement. Once installed, asking Claude to "give my chatbot a personality" or "make my bot stop agreeing with everything" triggers it.
+
+- **Claude Code**: copy the folder into your skills directory: `cp -r skill ~/.claude/skills/personalaity` (or `.claude/skills/personalaity` inside a project). Alternatively grab `personalaity.skill` from the [latest release](https://github.com/gianmarco-pinto/personalAIty/releases) and save it from the file card.
+- **Claude.ai / Desktop**: zip the `skill/` folder and upload it under Settings → Capabilities → Skills (paid plans).
+
 ## Use it from an agent (MCP)
 
 PersonalAIty ships an MCP server, so agents (Claude Code, Claude Desktop, Cursor, …) can build and test personas as native tools. Add it to your MCP config:
