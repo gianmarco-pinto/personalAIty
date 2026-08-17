@@ -1,0 +1,24 @@
+{
+  "name": "personalaity",
+  "displayName": "PersonalAIty",
+  "description": "Give an AI a specific, measurable personality. Define a character once in psychometric traits (HEXACO facets, Schwartz values, PAD dynamics) and compile it to a system prompt, voice prosody, NPC behavior weights, or a robot build sheet with the personalaity toolkit.",
+  "version": "0.6.0",
+  "author": {
+    "name": "Gianmarco Pinto",
+    "url": "https://personalaity.dev"
+  },
+  "homepage": "https://personalaity.dev",
+  "repository": "https://github.com/gianmarco-pinto/personalAIty",
+  "license": "MIT",
+  "keywords": [
+    "personality",
+    "persona",
+    "hexaco",
+    "system-prompt",
+    "character",
+    "sycophancy",
+    "voicebot",
+    "npc",
+    "robot"
+  ]
+}

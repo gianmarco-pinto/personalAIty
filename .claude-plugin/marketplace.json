@@ -1,0 +1,29 @@
+{
+  "name": "personalaity",
+  "description": "PersonalAIty: an open spec and toolkit for defining and measuring AI personality.",
+  "owner": {
+    "name": "Gianmarco Pinto",
+    "url": "https://personalaity.dev"
+  },
+  "plugins": [
+    {
+      "name": "personalaity",
+      "source": "./",
+      "displayName": "PersonalAIty",
+      "description": "Give an AI a specific, measurable personality. The bundled skill guides the whole workflow: turn a character into HEXACO traits, start from a gallery persona or author one, compile it to chat/social/voice/npc/robot with npx personalaity, deliver a working kit, and measure adherence and sycophancy.",
+      "version": "0.6.0",
+      "author": {
+        "name": "Gianmarco Pinto"
+      },
+      "homepage": "https://personalaity.dev",
+      "license": "MIT",
+      "keywords": [
+        "personality",
+        "persona",
+        "hexaco",
+        "system-prompt",
+        "sycophancy"
+      ]
+    }
+  ]
+}

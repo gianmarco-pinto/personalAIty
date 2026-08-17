@@ -83,10 +83,11 @@ No-tooling path: paste a persona YAML into any capable LLM with "embody this per
 
 ## Use it as a Claude skill
 
-The repo ships a [Claude skill](skill/SKILL.md) that teaches Claude the whole workflow: turn a character into traits, pick or author a persona, compile it with `npx personalaity`, deliver a working kit, and offer measurement. Once installed, asking Claude to "give my chatbot a personality" or "make my bot stop agreeing with everything" triggers it.
+The repo ships a [Claude skill](skills/personalaity/SKILL.md) that teaches Claude the whole workflow: turn a character into traits, pick or author a persona, compile it with `npx personalaity`, deliver a working kit, and offer measurement. Once installed, asking Claude to "give my chatbot a personality" or "make my bot stop agreeing with everything" triggers it.
 
-- **Claude Code**: copy the folder into your skills directory: `cp -r skill ~/.claude/skills/personalaity` (or `.claude/skills/personalaity` inside a project). Alternatively grab `personalaity.skill` from the [latest release](https://github.com/gianmarco-pinto/personalAIty/releases) and save it from the file card.
-- **Claude.ai / Desktop**: zip the `skill/` folder and upload it under Settings → Capabilities → Skills (paid plans).
+- **Claude Code (plugin, recommended)**: `/plugin marketplace add gianmarco-pinto/personalAIty`, then `/plugin install personalaity@personalaity`.
+- **Claude Code (manual)**: `cp -r skills/personalaity ~/.claude/skills/personalaity` (or into a project's `.claude/skills/`). Alternatively grab `personalaity.skill` from the [latest release](https://github.com/gianmarco-pinto/personalAIty/releases) and save it from the file card.
+- **Claude.ai / Desktop**: zip the `skills/personalaity/` folder and upload it under Settings → Capabilities → Skills (paid plans).
 
 ## Use it from an agent (MCP)
 
