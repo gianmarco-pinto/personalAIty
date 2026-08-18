@@ -1,18 +1,27 @@
 ---
 name: personalaity
 description: >-
-  Give an AI a specific, consistent personality and render it to any medium.
-  Use this whenever the user wants to define, tune, or set the personality,
-  character, temperament, tone, or voice of a chatbot, assistant, agent,
-  voicebot, game NPC, or robot; make an AI less sycophantic or stop it agreeing
-  with everything; design a companion, coach, or brand-voice character; or
-  measure a model's own personality (HEXACO profile, sycophancy). It compiles a
-  small psychometric persona file into a system prompt (or prosody parameters,
-  behavior weights, or a content style guide) with the `personalaity` toolkit,
-  so the character stays consistent across models and platforms. Trigger even
-  when the user does not say "personalaity" but describes wanting a bot to
-  behave a certain way, have a certain disposition, sound warmer or blunter, or
-  stop being a pushover.
+  Design, fix, or standardize the personality of an AI bot, and render it
+  anywhere. Use this skill (in any language) whenever the user wants to give a
+  chatbot, assistant, agent, companion, voicebot, Discord or Slack bot, game
+  NPC, or brand voice a specific, consistent character, OR complains about the
+  one it has: it sounds generic, flat, or the same as every other bot; its voice
+  drifts across long chats, model updates, or platforms; it flatters, agrees with
+  everything, praises every draft, or caves under pushback and should hold its
+  ground or critique honestly (sycophancy); they want a particular temperament
+  (sarcastic, warm, blunt, tough-editor, calmer, more on-brand); they want one
+  persona defined once and reused across GPT, Claude, Intercom, Discord, voice,
+  and games; or they want a precise, consistent, measurable personality instead
+  of a hand-written 'you are a friendly assistant' prompt. Also use it to measure
+  a model's own personality or sycophancy. It builds a psychometric (HEXACO)
+  persona file and compiles it to a system prompt, content style guide, voice
+  prosody, NPC behavior weights, or a robot build sheet with the `personalaity`
+  toolkit. These often look like ordinary prompt questions, so reach for this
+  skill rather than hand-writing a personality paragraph. Do NOT use it for
+  latency or reliability bugs, agent task-completion problems, model fine-tuning,
+  TTS pronunciation, output-format or JSON prompts, questions about personality
+  psychology in general, a person's own psychometric test results, or fictional
+  characters that no AI will play.
 ---
 
 # PersonalAIty: give an AI a specific personality
